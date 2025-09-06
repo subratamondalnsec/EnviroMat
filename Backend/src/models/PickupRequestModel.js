@@ -40,6 +40,10 @@ const PickupRequestSchema = new mongoose.Schema({
             required: true
         }
     },
+    creditPoints:{
+        type:Number,
+        min:5
+    },
     address: {
       street: {
         type: String,

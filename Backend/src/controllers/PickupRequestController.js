@@ -2,11 +2,12 @@ const PickupRequest = require('../models/PickupRequestModel');
 const {uploadImageToCloudinary}=require('../utils/imageUploader');
 const Picker =require("../models/Picker");
 const{findNearestPicker}=require("../utils/fatchusingAI");
+const calculateCredits=require('../utils/calculateCreditPoint.js')
 const User =require('../models/User.js');
 
 exports.uploadWaste = async (req, res) => {
   try {
-    const { wasteType, quantity, address, lat, lng, image,creditPoints, isEmergency = false } = req.body;
+    const { wasteType, quantity, address, lat, lng, image,userQuantity, isEmergency = false } = req.body;
 
     // If using file upload, uncomment and integrate
     // const file = req.files?.image;
@@ -19,7 +20,7 @@ exports.uploadWaste = async (req, res) => {
       quantity,
       location: { lat, lng },
       address,
-      creditPoints,
+      userQuantity,
       isEmergency // Add isEmergency field
     });
 
@@ -118,8 +119,8 @@ exports.cancelPickupRequest = async (req, res) => {
     if (request.pickupStatus === "cancelled") {
       return res.status(400).json({ error: "Pickup request already cancelled." });
     }
-    if (request.pickupStatus === "completed"  || request.pickupStatus === "processing") {
-      return res.status(400).json({ error: "Completed / Processing pickups cannot be cancelled." });
+    if (request.pickupStatus === "completed"  || request.pickupStatus === "in_progress") {
+      return res.status(400).json({ error: "Completed / In Progress pickups cannot be cancelled." });
     }
 
     // 4️⃣ Update request status
@@ -155,5 +156,89 @@ exports.cancelPickupRequest = async (req, res) => {
   } catch (err) {
     console.error("Error cancelling pickup request", err);
     res.status(500).json({ error: "Server error." });
+  }
+};
+
+
+exports.startPickup = async (req, res) => {
+  try {
+    const { requestId } = req.body;
+    const pickerId = req.user.id; // picker logged in
+
+    const request = await PickupRequest.findById(requestId);
+    if (!request) return res.status(404).json({ error: "Request not found" });
+
+    if (request.pickupBy.toString() !== pickerId.toString()) {
+      return res.status(403).json({ error: "Not assigned to this picker" });
+    }
+
+    if (request.pickupStatus !== "assigned") {
+      return res.status(400).json({ error: "Pickup cannot be started now" });
+    }
+
+    request.pickupStatus = "in_progress";
+    await request.save();
+
+    res.json({ message: "Pickup started", request });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+
+exports.completePickup = async (req, res) => {
+  try {
+    const { requestId, verifiedQuantity, qualityRating } = req.body;
+    const pickerId = req.user.id;
+
+    // 1️⃣ Find the request
+    const request = await PickupRequest.findById(requestId);
+    if (!request) {
+      return res.status(404).json({ error: "Pickup request not found" });
+    }
+
+    // 2️⃣ Ensure the request belongs to the picker
+    if (request.pickupBy.toString() !== pickerId.toString()) {
+      return res.status(403).json({ error: "Not authorized to complete this request" });
+    }
+
+    // 3️⃣ Ensure pickup is in progress
+    if (request.pickupStatus !== "in_progress") {
+      return res.status(400).json({ error: "Pickup is not in progress or already completed" });
+    }
+
+    // 4️⃣ Update request as completed
+    request.pickupStatus = "completed";
+    request.verifiedQuantity = verifiedQuantity;
+    request.qualityRating = qualityRating;
+    request.pickupDate = new Date();
+
+    // Calculate earned points
+    const earnedPoints = calculateCredits(request.wasteType, verifiedQuantity, qualityRating);
+    request.creditPoints = earnedPoints; // save in request
+
+    await request.save();
+
+    // 5️⃣ Update user credits
+    await User.findByIdAndUpdate(request.userId, {
+      $inc: { creditPoints: earnedPoints },
+    });
+
+    // 6️⃣ Update picker credits (fixed + bonus)
+    const pickerPoints = 10 + Math.floor(verifiedQuantity / 5);
+    await Picker.findByIdAndUpdate(pickerId, {
+      $inc: { creditPoints: pickerPoints },
+    });
+
+    res.status(200).json({
+      message: "Pickup completed successfully",
+      userPoints: earnedPoints,
+      pickerPoints,
+      request,
+    });
+  } catch (err) {
+    console.error("Error completing pickup:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };

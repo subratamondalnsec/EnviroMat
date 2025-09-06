@@ -1,11 +1,32 @@
+// components/core/Home/TestimonialSection.jsx
 import React, { useState } from 'react';
 import { Star, Quote } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import NumberTicker from './AnimatedNumberTicker';
+import { useSelector } from 'react-redux';
 
 const TestimonialSection = () => {
   const [hoveredCard, setHoveredCard] = useState(null);
   const [hoveredStar, setHoveredStar] = useState({ cardId: null, starIndex: null });
+
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
+  // Theme-based styles
+  const themeStyles = {
+    background: isDarkMode ? 'bg-[#030404]' : 'bg-[#F9FAFB]',
+    cardBg: isDarkMode ? 'bg-gray-800' : 'bg-[#F3F4F6]',
+    cardBorder: isDarkMode ? 'border-gray-600' : 'border-gray-300',
+    text: isDarkMode ? 'text-white' : 'text-gray-900',
+    secondaryText: isDarkMode ? 'text-gray-300' : 'text-gray-600',
+    authorText: isDarkMode ? 'text-white' : 'text-gray-700',
+    quoteBg: isDarkMode ? 'bg-green-800' : 'bg-green-100',
+    quoteText: isDarkMode ? 'text-green-300' : 'text-green-600',
+    counterBg: isDarkMode ? 'bg-gray-800' : 'bg-[#F3F4F6]',
+    counterBorder: isDarkMode ? 'border-gray-600' : 'border-gray-300',
+    gradientOverlay: isDarkMode ? 'from-[#030404] to-transparent' : 'from-[#F9FAFB] to-transparent',
+    hoverGlow: isDarkMode ? 'bg-gradient-to-r from-green-900/40 to-purple-900/40' : 'bg-gradient-to-r from-green-100/50 to-purple-100/50'
+  };
 
   // Expanded testimonials array for infinite scroll effect
   const testimonials = [
@@ -92,14 +113,14 @@ const TestimonialSection = () => {
       key={testimonial.id}
       onHoverStart={() => setHoveredCard(testimonial.id)}
       onHoverEnd={() => setHoveredCard(null)}
-      className="bg-[#F3F4F6] rounded-3xl p-6 border border-gray-300 relative group cursor-pointer min-w-[350px] mx-3"
+      className={`${themeStyles.cardBg} rounded-3xl p-6 border ${themeStyles.cardBorder} relative group cursor-pointer min-w-[350px] mx-3 transition-colors duration-300`}
       style={{ minHeight: '280px' }}
     >
       {/* Subtle glow effect on hover */}
       <AnimatePresence>
         {hoveredCard === testimonial.id && (
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-green-100/50 to-purple-100/50 rounded-3xl"
+            className={`absolute inset-0 ${themeStyles.hoverGlow} rounded-3xl`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -116,10 +137,10 @@ const TestimonialSection = () => {
           transition={{ duration: 0.2 }}
         >
           <motion.div 
-            className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors duration-300"
+            className={`w-12 h-12 ${themeStyles.quoteBg} rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors duration-300`}
             whileTap={{ scale: 0.95 }}
           >
-            <Quote className="w-6 h-6 text-green-600" />
+            <Quote className={`w-6 h-6 ${themeStyles.quoteText}`} />
           </motion.div>
         </motion.div>
 
@@ -150,7 +171,7 @@ const TestimonialSection = () => {
 
         {/* Content */}
         <motion.p 
-          className="text-gray-600 leading-relaxed mb-6 text-sm font-medium"
+          className={`${themeStyles.secondaryText} leading-relaxed mb-6 text-sm font-medium transition-colors duration-300`}
           initial={{ opacity: 0.9 }}
           whileHover={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
@@ -160,36 +181,29 @@ const TestimonialSection = () => {
 
         {/* Author section */}
         <div className="flex items-center space-x-4">
-          <motion.div
-            className="relative"
-          >
+          <motion.div className="relative">
             <motion.img
               src={testimonial.image}
               alt={testimonial.name}
-              className="w-12 h-12 rounded-full object-cover border-1 border-green-200 group-hover:border-purple-300 transition-colors duration-300"
+              className={`w-12 h-12 rounded-full object-cover border-1 ${isDarkMode ? 'border-gray-600' : 'border-green-200'} group-hover:border-purple-300 transition-colors duration-300`}
             />
           </motion.div>
           
           <div>
-            <motion.h4 
-              className="font-bold text-gray-700 text-base"
-            >
+            <motion.h4 className={`font-bold ${themeStyles.authorText} text-base transition-colors duration-300`}>
               {testimonial.name}
             </motion.h4>
-            <motion.p 
-              className="text-sm text-purple-500 font-medium"
-            >
+            <motion.p className="text-sm text-purple-500 font-medium">
               {testimonial.role}
             </motion.p>
           </div>
         </div>
       </div>
-
     </motion.div>
   );
 
   return (
-    <section className="mt-[6rem] bg-[#F9FAFB] relative overflow-hidden">
+    <section className={`mt-[6rem] ${themeStyles.background} relative overflow-hidden transition-colors duration-300`}>
       {/* Subtle background animation */}
       <motion.div 
         className="absolute inset-0 opacity-5"
@@ -217,7 +231,7 @@ const TestimonialSection = () => {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
+          <h2 className={`text-5xl lg:text-6xl font-bold ${themeStyles.text} leading-tight mb-6 transition-colors duration-300`}>
             What Our 
             <motion.span 
               className="text-purple-400 ml-2"
@@ -261,8 +275,8 @@ const TestimonialSection = () => {
           </div>
           
           {/* Gradient overlays for smooth edges */}
-          <div className="absolute left-0 top-0 w-16 h-full bg-gradient-to-r from-[#F9FAFB] to-transparent pointer-events-none z-10" />
-          <div className="absolute right-0 top-0 w-16 h-full bg-gradient-to-l from-[#F9FAFB] to-transparent pointer-events-none z-10" />
+          <div className={`absolute left-0 top-0 w-16 h-full bg-gradient-to-r ${themeStyles.gradientOverlay} pointer-events-none z-10`} />
+          <div className={`absolute right-0 top-0 w-16 h-full bg-gradient-to-l ${themeStyles.gradientOverlay} pointer-events-none z-10`} />
         </div>
 
         {/* Animated Number Ticker Counter */}
@@ -274,19 +288,18 @@ const TestimonialSection = () => {
           viewport={{ once: true }}
         >
           <motion.div
-            className="inline-flex items-center space-x-4 bg-[#F3F4F6] rounded-full px-6 py-3 border border-gray-300"
+            className={`inline-flex items-center space-x-4 ${themeStyles.counterBg} rounded-full px-6 py-3 border ${themeStyles.counterBorder} transition-colors duration-300`}
           >
             <NumberTicker 
               endValue={5000}
               duration={4000}
               suffix="+"
-              className="text-3xl font-semibold text-green-600 tabular-nums"
+              className={`text-3xl font-semibold ${isDarkMode ? 'text-green-400' : 'text-green-600'} tabular-nums transition-colors duration-300`}
               startDelay={100}
             />
-            <span className="text-gray-700 font-medium text-xl">Happy Clients</span>
+            <span className={`${themeStyles.text} font-medium text-xl transition-colors duration-300`}>Happy Clients</span>
           </motion.div>
         </motion.div>
-
       </div>
     </section>
   );

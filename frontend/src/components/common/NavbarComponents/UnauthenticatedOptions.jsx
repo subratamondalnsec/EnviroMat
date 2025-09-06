@@ -1,3 +1,4 @@
+// components/common/NavbarComponents/UnauthenticatedOptions.jsx
 import React from 'react';
 import UserDropdownItem from './UserDropdownItem';
 

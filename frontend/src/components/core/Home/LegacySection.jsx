@@ -1,8 +1,10 @@
+// components/core/Home/LegacySection.jsx
 import React, { useEffect, useRef } from 'react';
 import { Instagram, Play, Facebook } from 'lucide-react';
 import { motion } from "motion/react";
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useSelector } from 'react-redux';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -13,21 +15,33 @@ const LegacySection = () => {
   const rightCardRef = useRef(null);
   const headingRef = useRef(null);
 
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
+  // Theme-based styles
+  const themeStyles = {
+    background: isDarkMode ? 'bg-[#030404]' : 'bg-[#F9FAFB]',
+    text: isDarkMode ? 'text-white' : 'text-gray-900',
+    secondaryText: isDarkMode ? 'text-gray-300' : 'text-gray-800',
+    centerCardBg: isDarkMode ? 'bg-gray-800/80' : 'bg-gray-200/80',
+    centerCardButton: isDarkMode ? 'bg-white text-gray-900 hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-gray-800'
+  };
+
   const valuesTags = [
-    { text: 'Sustainable', color: 'bg-green-200 text-green-800' },
-    { text: 'Ethical', color: 'bg-purple-200 text-purple-800' },
-    { text: 'Eco-conscious', color: 'bg-purple-200 text-purple-800' },
-    { text: 'Pioneering', color: 'bg-green-200 text-green-800' },
-    { text: 'Responsible', color: 'bg-purple-200 text-purple-800' },
-    { text: 'Thoughtful', color: 'bg-green-200 text-green-800' },
-    { text: 'Progressive', color: 'bg-green-200 text-green-800' },
-    { text: 'Forward-looking', color: 'bg-purple-200 text-purple-800' },
-    { text: 'Ethical', color: 'bg-purple-200 text-purple-800' },
-    { text: 'Eco-conscious', color: 'bg-purple-200 text-purple-800' },
-    { text: 'Pioneering', color: 'bg-green-200 text-green-800' },
-    { text: 'Responsible', color: 'bg-purple-200 text-purple-800' },
-    { text: 'Thoughtful', color: 'bg-green-200 text-green-800' },
-    { text: 'Progressive', color: 'bg-green-200 text-green-800' },
+    { text: 'Sustainable', color: isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-200 text-green-800' },
+    { text: 'Ethical', color: isDarkMode ? 'bg-purple-900 text-purple-300' : 'bg-purple-200 text-purple-800' },
+    { text: 'Eco-conscious', color: isDarkMode ? 'bg-purple-900 text-purple-300' : 'bg-purple-200 text-purple-800' },
+    { text: 'Pioneering', color: isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-200 text-green-800' },
+    { text: 'Responsible', color: isDarkMode ? 'bg-purple-900 text-purple-300' : 'bg-purple-200 text-purple-800' },
+    { text: 'Thoughtful', color: isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-200 text-green-800' },
+    { text: 'Progressive', color: isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-200 text-green-800' },
+    { text: 'Forward-looking', color: isDarkMode ? 'bg-purple-900 text-purple-300' : 'bg-purple-200 text-purple-800' },
+    { text: 'Ethical', color: isDarkMode ? 'bg-purple-900 text-purple-300' : 'bg-purple-200 text-purple-800' },
+    { text: 'Eco-conscious', color: isDarkMode ? 'bg-purple-900 text-purple-300' : 'bg-purple-200 text-purple-800' },
+    { text: 'Pioneering', color: isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-200 text-green-800' },
+    { text: 'Responsible', color: isDarkMode ? 'bg-purple-900 text-purple-300' : 'bg-purple-200 text-purple-800' },
+    { text: 'Thoughtful', color: isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-200 text-green-800' },
+    { text: 'Progressive', color: isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-200 text-green-800' },
   ];
 
   useEffect(() => {
@@ -47,7 +61,7 @@ const LegacySection = () => {
           y: 100,
           opacity: 0,
           scale: 0.8,
-          rotationY: index === 0 ? -15 : index === 2 ? 15 : 0, // Slight 3D rotation
+          rotationY: index === 0 ? -15 : index === 2 ? 15 : 0,
         });
       }
     });
@@ -81,7 +95,7 @@ const LegacySection = () => {
           rotationY: 0,
           duration: 0.8,
           ease: 'back.out(1.7)',
-        }, `-=0.6`); // Overlap animations
+        }, `-=0.6`);
       }
     });
 
@@ -107,19 +121,19 @@ const LegacySection = () => {
     return () => {
       ScrollTrigger.getAll().forEach(st => st.kill());
     };
-  }, []);
+  }, [isDarkMode]);
 
   return (
-    <section ref={sectionRef} className="py-20 bg-[#F9FAFB] overflow-hidden">
+    <section ref={sectionRef} className={`py-20 ${themeStyles.background} overflow-hidden transition-colors duration-300`}>
       <div className="max-w-full mx-auto px-8 sm:px-6 lg:px-8">
         {/* Main Heading */}
         <div ref={headingRef} className="text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-bold leading-tight">
-            <span className="text-gray-900">We're not just </span>
+            <span className={themeStyles.text}>We're not just </span>
             <span className="text-purple-400">building</span><br />
             <span className="text-purple-400">materials</span>
-            <span className="text-gray-900"> – we're building</span><br />
-            <span className="text-gray-900">a </span>
+            <span className={themeStyles.text}> – we're building</span><br />
+            <span className={themeStyles.text}>a </span>
             <span className="text-green-400">legacy out change</span>
           </h2>
         </div>
@@ -161,9 +175,9 @@ const LegacySection = () => {
           </div>
 
           {/* Center Column - CTA and Values */}
-          <div ref={centerCardRef} className="text-center space-y-8 bg-gray-200/80 h-80 rounded-4xl col-span-2 transform-gpu">
+          <div ref={centerCardRef} className={`text-center space-y-8 ${themeStyles.centerCardBg} h-80 rounded-4xl col-span-2 transform-gpu transition-colors duration-300`}>
             <div className="space-y-6 mt-6">
-              <p className="text-md font-medium text-gray-800 tracting-tighter leading-snug">
+              <p className={`text-md font-medium ${themeStyles.secondaryText} tracking-tighter leading-snug transition-colors duration-300`}>
                 Join us in sculpting<br />
                 green and sustainable world
               </p>
@@ -171,7 +185,7 @@ const LegacySection = () => {
               <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-5 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-colors font-medium"
+                className={`px-5 py-2 rounded-full transition-colors font-medium ${themeStyles.centerCardButton}`}
               >
                 Get Started
               </motion.button>
@@ -183,7 +197,7 @@ const LegacySection = () => {
                 <span 
                   key={index}
                   data-value-tag
-                  className={`px-4 py-2 rounded-full text-sm font-medium ${tag.color} transform hover:scale-105 transition-transform cursor-default`}
+                  className={`px-4 py-2 rounded-full text-sm font-medium ${tag.color} transform hover:scale-105 transition-all duration-300 cursor-default`}
                   style={{
                     transform: `rotate(${Math.random() * 10 - 5}deg)`,
                   }}

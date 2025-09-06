@@ -16,7 +16,7 @@ router.post("/request-order", auth, requestOrder);
 router.get("/get-all-orders/user/:userId",getAllOrdersByUser)
 
 // Get all addToCards for a user
-router.get("/get-all-addtocards/user/:userId",getAllAddToCardsByUser)
+router.post("/get-all-addtocards/user",getAllAddToCardsByUser)
 
 // Add to cart
 router.post("/add-to-card",addToCard)

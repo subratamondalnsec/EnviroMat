@@ -102,7 +102,7 @@ export const getAllOrdersByUser = async (userId) => {
 
 export const getAllAddToCardsByUser = async (userId) => {
   try {
-    const response = await apiConnector("GET", `${orderEndpoints.GET_ALL_ADD_TO_CARDS_BY_USER_API}/${userId}`);
+    const response = await apiConnector("POST", orderEndpoints.GET_ALL_ADD_TO_CARDS_BY_USER_API, { userId });
     if (!response?.data?.success) {
       throw new Error(response.data.message || "Failed to fetch cart items");
     }

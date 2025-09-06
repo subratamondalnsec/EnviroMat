@@ -11,7 +11,7 @@ import products from '../components/core/Shop/Data.jsx';
 import Checkout from './Checkout';
 import Footer from '../components/common/Footer';
 import { ITEM_CATEGORIES } from '../utils/constants';
-import { getAllItems, addToCard, cancelRequestOfOrder, cancelFromAddToCard } from '../services/operations/orderAPI';
+import { getAllItems, addToCard, cancelRequestOfOrder, cancelFromAddToCard, getAllAddToCardsByUser } from '../services/operations/orderAPI';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -81,6 +81,38 @@ const Shop = () => {
     }
   };
 
+  // Function to sync cart from backend
+  const syncCartFromBackend = async () => {
+    try {
+      if (user && token) {
+        const backendCartItems = await getAllAddToCardsByUser(user._id);
+        
+        if (backendCartItems && Array.isArray(backendCartItems)) {
+          // Transform backend cart items to match frontend structure
+          const transformedCartItems = backendCartItems.map(cartItem => {
+            const order = cartItem.orderId || cartItem;
+            return {
+              id: order._id || order.id,
+              name: order.product?.title || order.title || 'Unknown Product',
+              description: order.product?.description || order.description || 'No description available',
+              price: order.product?.price || order.price || 0,
+              category: order.product?.category || order.category || 'Other',
+              image: order.image || '/default-product.jpg',
+              rating: order.rating || 0,
+              reviews: order.reviews || 0,
+              quantity: cartItem.quantity || 1
+            };
+          });
+          
+          // Merge with local cart items
+          setCartItems(transformedCartItems);
+        }
+      }
+    } catch (error) {
+      console.error('Error syncing cart from backend:', error);
+    }
+  };
+
   useEffect(() => {
     try {
       const savedShowCheckout = localStorage.getItem('showCheckout');
@@ -98,7 +130,17 @@ const Shop = () => {
     
     // Fetch items from API on component mount
     fetchItemsFromAPI();
+    
+    // Don't sync cart automatically on mount
+    // syncCartFromBackend();
   }, []);
+
+  // Don't sync cart when user changes automatically
+  // useEffect(() => {
+  //   if (user && token) {
+  //     syncCartFromBackend();
+  //   }
+  // }, [user, token]);
 
   useEffect(() => {
     try {
@@ -329,7 +371,7 @@ const Shop = () => {
     setSelectedCategory('All');
   };
 
-  const handleCheckout = (e) => {
+  const handleCheckout = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -337,6 +379,9 @@ const Shop = () => {
       alert('Your cart is empty. Please add some items before checkout.');
       return;
     }
+    
+    // Sync cart from backend before showing checkout
+    await syncCartFromBackend();
     
     setShowCheckout(true);
   };

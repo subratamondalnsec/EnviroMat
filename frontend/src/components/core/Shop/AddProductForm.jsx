@@ -226,7 +226,7 @@ const AddProductForm = ({
     >
       <motion.div
         ref={modalRef}
-        className="bg-[#f5f5f5] rounded-3xl p-8 max-w-xl w-full overflow-hidden relative mt-16"
+        className="bg-[#f5f5f5] rounded-3xl pt-6 pb-4 px-6 max-w-xl w-full overflow-hidden relative mt-6"
       >
         <button
           onClick={handleClose}
@@ -382,7 +382,7 @@ const AddProductForm = ({
               ) : (
                 <>
                   <label htmlFor="image" className="flex flex-col items-center justify-center cursor-pointer">
-                    <Camera size={36} className="text-gray-400 mb-2" />
+                    <Camera size={36} className="text-gray-400 mb-1" />
                     <span className="text-green-600 hover:underline">Upload an image</span>
                     <span className="text-sm text-gray-500 mt-1">JPG, PNG, WebP or GIF (Max 5MB)</span>
                   </label>

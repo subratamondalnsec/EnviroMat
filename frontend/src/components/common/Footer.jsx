@@ -273,7 +273,7 @@ const Footer = () => {
           custom={5}
         >
           <motion.span
-            className="text-[140px] lg:text-[152px] font-bold select-none leading-tight tracking-tighter cursor-pointer scale-[1.02]"
+            className="text-[7.29vw] lg:text-[10.5vw] font-bold select-none leading-tight tracking-tighter cursor-pointer scale-[1.02]"
             style={{
               background:
                 "linear-gradient(180deg, #3BF799 30%, #24D152 50%, #000000 100%)",

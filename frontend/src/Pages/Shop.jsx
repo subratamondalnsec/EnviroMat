@@ -9,6 +9,7 @@ import AddProductForm from '../components/core/Shop/AddProductForm';
 import products from '../components/core/Shop/Data';
 import Checkout from './Checkout';
 import Footer from '../components/common/Footer';
+import { ITEM_CATEGORIES } from '../utils/constants';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -34,7 +35,7 @@ const Shop = () => {
   const headerRef = useRef(null);
   const productsRef = useRef([]);
 
-  const categories = ['All', 'Building Materials', 'Solar Products', 'Eco Accessories', 'Garden & Home', 'Packaging'];
+  const categories = ['All', ...ITEM_CATEGORIES];
 
   useEffect(() => {
     try {
@@ -79,16 +80,36 @@ const Shop = () => {
   // Filter products based on category and search
   const filteredProducts = productList.filter(product => {
     const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Handle both static products (with 'name') and API products (with 'title')
+    const productName = product.name || product.product?.title || product.title || '';
+    const productDescription = product.description || product.product?.description || '';
+    
+    const matchesSearch = productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         productDescription.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
   // Handle new product submission from the form
   const handleAddProduct = (newProduct) => {
-    setProductList(prev => [newProduct, ...prev]);
+    // Transform API response to match frontend product structure
+    const transformedProduct = {
+      id: newProduct.order?._id || newProduct._id || Date.now(),
+      name: newProduct.order?.product?.title || newProduct.product?.title || newProduct.title,
+      description: newProduct.order?.product?.description || newProduct.product?.description || newProduct.description,
+      price: newProduct.order?.product?.price || newProduct.product?.price || newProduct.price,
+      category: newProduct.order?.product?.category || newProduct.product?.category || newProduct.category,
+      image: newProduct.order?.image || newProduct.image,
+      rating: 0,
+      reviews: 0,
+      isNew: true,
+      originalPrice: (newProduct.order?.product?.price || newProduct.product?.price || newProduct.price) * 1.2,
+      discount: 0
+    };
+    
+    setProductList(prev => [transformedProduct, ...prev]);
     setShowAddForm(false);
-    alert('Product added successfully!');
+    // Remove alert since we now have toast notifications
   };
 
   // Handle showing add form

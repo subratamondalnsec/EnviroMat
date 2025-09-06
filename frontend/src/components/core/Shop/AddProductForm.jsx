@@ -3,19 +3,30 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { X, Camera } from 'lucide-react';
 import gsap from 'gsap';
+import { useSelector, useDispatch } from 'react-redux';
+import { toast } from 'react-hot-toast';
+import { createOrder } from '../../../services/operations/orderAPI';
+import { setOrderLoading } from '../../../slices/orderSlice';
+import { ITEM_CATEGORIES } from '../../../utils/constants';
 
 const AddProductForm = ({ 
   isOpen, 
   onClose, 
   onSubmit, 
-  categories = ['Building Materials', 'Solar Products', 'Eco Accessories', 'Garden & Home', 'Packaging']
+  categories = ITEM_CATEGORIES
 }) => {
+  const dispatch = useDispatch();
+  const { token } = useSelector((state) => state.auth);
+  const { loading } = useSelector((state) => state.order);
+
   const [formData, setFormData] = useState({
     image: '',
-    category: categories[0] || 'Building Materials',
-    name: '',
+    category: categories[0] || 'Recycled Plastic Products',
+    title: '',
     description: '',
-    price: ''
+    price: '',
+    quantity: '',
+    address: ''
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -37,7 +48,7 @@ const AddProductForm = ({
     }));
   };
 
-  // Handle image upload
+  // Handle image upload with compression
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -48,12 +59,51 @@ const AddProductForm = ({
         return;
       }
 
+      // Check file size (limit to 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (event) => {
-        setFormData(prev => ({
-          ...prev,
-          image: event.target.result
-        }));
+        // Create an image element to compress the image
+        const img = new Image();
+        img.onload = () => {
+          // Create canvas for compression
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Calculate new dimensions (max 800x600)
+          let { width, height } = img;
+          const maxWidth = 800;
+          const maxHeight = 600;
+          
+          if (width > height) {
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = (width * maxHeight) / height;
+              height = maxHeight;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Draw and compress image
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
+          
+          setFormData(prev => ({
+            ...prev,
+            image: compressedDataUrl
+          }));
+        };
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
       setImageFile(file);
@@ -64,47 +114,84 @@ const AddProductForm = ({
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     
+    if (!token) {
+      toast.error('Please login to add products');
+      return;
+    }
+    console.log("Form submitted:", formData);
     // Validation
-    if (!formData.name.trim() || !formData.description.trim() || !formData.price.trim()) {
-      alert('Please fill in all required fields');
+    if (!formData.title.trim() || !formData.description.trim() || !formData.price.trim() || !formData.quantity.trim() || !formData.address.trim()) {
+      toast.error('Please fill in all required fields');
       return;
     }
 
-    if (isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) {
-      alert('Please enter a valid price');
+    // Validate title length (5-20 characters as per backend model)
+    if (formData.title.length < 5 || formData.title.length > 20) {
+      toast.error('Product title must be between 5 and 20 characters');
+      return;
+    }
+
+    // Validate description length (25-50 characters as per backend model) 
+    if (formData.description.length < 25 || formData.description.length > 50) {
+      toast.error('Product description must be between 25 and 50 characters');
+      return;
+    }
+
+    // Validate price (minimum 50 as per backend model)
+    const price = parseFloat(formData.price);
+    if (isNaN(price) || price < 50) {
+      toast.error('Price must be at least ₹50');
+      return;
+    }
+
+    // Validate quantity
+    const quantity = parseInt(formData.quantity);
+    if (isNaN(quantity) || quantity < 1) {
+      toast.error('Quantity must be at least 1');
       return;
     }
 
     if (!formData.image) {
-      alert('Please select an image for your product');
+      toast.error('Please select an image for your product');
       return;
     }
 
     setIsSubmitting(true);
+    dispatch(setOrderLoading(true));
 
     try {
-      // Create new product object
-      const newProduct = {
-        id: Date.now(),
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        price: parseFloat(formData.price),
-        category: formData.category,
-        image: formData.image || '/default-product.jpg',
-        rating: 0,
-        reviews: 0,
-        inStock: true
+      // Prepare order data for backend
+      const orderData = {
+        product: {
+          title: formData.title.trim(),
+          description: formData.description.trim(),
+          price: price,
+          quantity: quantity,
+          category: formData.category
+        },
+        image: {
+          tempFilePath: formData.image  // Wrap base64 data in expected format
+        },
+        address: formData.address.trim()
       };
 
-      // Call parent's onSubmit function
-      onSubmit(newProduct);
+      // Call backend API to create order
+      const createdOrder = await createOrder(orderData);
+      
+      // Call parent's onSubmit function with the created order
+      onSubmit && onSubmit(createdOrder);
 
-      // Reset form
+      toast.success('Product added successfully!');
+      
+      // Reset form and close modal
       resetForm();
+      onClose();
     } catch (error) {
       console.error('Error creating product:', error);
+      toast.error(error.message || 'Failed to add product');
     } finally {
       setIsSubmitting(false);
+      dispatch(setOrderLoading(false));
     }
   };
 
@@ -112,10 +199,12 @@ const AddProductForm = ({
   const resetForm = () => {
     setFormData({
       image: '',
-      category: categories[0] || 'Building Materials',
-      name: '',
+      category: categories[0] || 'Recycled Plastic Products',
+      title: '',
       description: '',
-      price: ''
+      price: '',
+      quantity: '',
+      address: ''
     });
     setImageFile(null);
   };
@@ -152,20 +241,22 @@ const AddProductForm = ({
         <form onSubmit={handleFormSubmit} className="space-y-4">
           {/* Product Title */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="name">
-              Product Title *
+            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="title">
+              Product Title * (5-20 characters)
             </label>
             <input
-              id="name"
-              name="name"
+              id="title"
+              name="title"
               type="text"
-              value={formData.name}
+              value={formData.title}
               onChange={handleFormChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
-              placeholder="Enter product name"
-              maxLength={200}
+              placeholder="Enter product title"
+              minLength={5}
+              maxLength={20}
               required
             />
+            <p className="text-xs text-gray-500 mt-1">{formData.title.length}/20 characters</p>
           </div>
 
           {/* Product Category */}
@@ -192,16 +283,37 @@ const AddProductForm = ({
           {/* Product Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="description">
-              Product Description *
+              Product Description * (25-50 characters)
             </label>
             <textarea
               id="description"
               name="description"
-              rows={4}
+              rows={3}
               value={formData.description}
               onChange={handleFormChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent resize-none transition"
               placeholder="Enter product description"
+              minLength={25}
+              maxLength={50}
+              required
+            />
+            <p className="text-xs text-gray-500 mt-1">{formData.description.length}/50 characters</p>
+          </div>
+
+          {/* Product Quantity */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="quantity">
+              Quantity Available *
+            </label>
+            <input
+              id="quantity"
+              name="quantity"
+              type="number"
+              value={formData.quantity}
+              onChange={handleFormChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
+              placeholder="Enter available quantity"
+              min="1"
               required
             />
           </div>
@@ -209,7 +321,7 @@ const AddProductForm = ({
           {/* Product Price */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="price">
-              Product Price (₹) *
+              Product Price (₹) * (Minimum ₹50)
             </label>
             <input
               id="price"
@@ -218,9 +330,26 @@ const AddProductForm = ({
               value={formData.price}
               onChange={handleFormChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
-              placeholder="Enter price"
-              min="0"
+              placeholder="Enter price (minimum ₹50)"
+              min="50"
               step="0.01"
+              required
+            />
+          </div>
+
+          {/* Address */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="address">
+              Address *
+            </label>
+            <textarea
+              id="address"
+              name="address"
+              rows={3}
+              value={formData.address}
+              onChange={handleFormChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent resize-none transition"
+              placeholder="Enter your address for pickup/delivery"
               required
             />
           </div>
@@ -255,7 +384,7 @@ const AddProductForm = ({
                   <label htmlFor="image" className="flex flex-col items-center justify-center cursor-pointer">
                     <Camera size={36} className="text-gray-400 mb-2" />
                     <span className="text-green-600 hover:underline">Upload an image</span>
-                    <span className="text-sm text-gray-500 mt-1">JPG, PNG, WebP or GIF</span>
+                    <span className="text-sm text-gray-500 mt-1">JPG, PNG, WebP or GIF (Max 5MB)</span>
                   </label>
                   <input
                     id="image"

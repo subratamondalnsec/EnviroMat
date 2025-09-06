@@ -12,7 +12,7 @@ import NavigationLinks from "./NavbarComponents/NavigationLinks";
 import UserDropdown from "./NavbarComponents/UserDropdown";
 
 // Import logout thunk
-import { logoutUser } from "../../slices/authSlice";
+import { logout } from "../../services/operations/authAPI";
 
 const Navbar = () => {
   const navbarRef = useRef(null);
@@ -60,9 +60,7 @@ const Navbar = () => {
   // Handle logout
   const handleLogout = async () => {
     try {
-      // Get account type from user data, default to "User" if not found
-      const accountType = user?.accountType || "User";
-      await dispatch(logoutUser({ accountType, navigate })).unwrap();
+      dispatch(logout(navigate));
       setIsDropdownOpen(false);
     } catch (error) {
       console.error("Logout error:", error);

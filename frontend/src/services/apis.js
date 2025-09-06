@@ -48,14 +48,14 @@ export const blogEndpoints = {
 
 // ORDER ENDPOINTS
 export const orderEndpoints = {
-  GET_ALL_ITEMS_API: BASE_URL + "/order/all-items",
-  CREATE_ORDER_API: BASE_URL + "/order/create-order",
+  GET_ALL_ITEMS_API: BASE_URL + "/order/get-items",
+  CREATE_ORDER_API: BASE_URL + "/order/create",
   REQUEST_ORDER_API: BASE_URL + "/order/request-order",
   ADD_TO_CARD_API: BASE_URL + "/order/add-to-card",
-  CANCEL_REQUEST_API: BASE_URL + "/order/cancel-request",
-  CANCEL_FROM_ADD_TO_CARD_API: BASE_URL + "/order/cancel-from-add-to-card",
-  GET_ALL_ORDERS_BY_USER_API: BASE_URL + "/order/user-orders",
-  GET_ALL_ADD_TO_CARDS_BY_USER_API: BASE_URL + "/order/user-add-to-cards",
+  CANCEL_REQUEST_API: BASE_URL + "/order/cancel-order",
+  CANCEL_FROM_ADD_TO_CARD_API: BASE_URL + "/order/cancel-from-addtocard",
+  GET_ALL_ORDERS_BY_USER_API: BASE_URL + "/order/get-all-orders/user",
+  GET_ALL_ADD_TO_CARDS_BY_USER_API: BASE_URL + "/order/get-all-addtocards/user",
 };
 
 export const orderEndPoints = {

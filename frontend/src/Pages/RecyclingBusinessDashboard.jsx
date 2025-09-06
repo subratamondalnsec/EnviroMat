@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { useSelector, useDispatch } from 'react-redux';
 import gsap from 'gsap';
+import { ITEM_CATEGORIES } from '../utils/constants';
 
 // Import all modular components
 import BusinessHeader from '../components/core/RecyclingDashboard/BusinessHeader';
@@ -63,7 +64,7 @@ const RecyclingBusinessDashboard = () => {
         totalAmount: 9975,
         orderDate: "2025-01-14",
         status: "processing",
-        category: "Building Materials"
+        category: "Paper Products"
       },
       {
         id: "ORD-2025-003",
@@ -84,14 +85,14 @@ const RecyclingBusinessDashboard = () => {
       revenue: [18500, 22300, 19800, 25600, 28900, 32400],
       orders: [45, 56, 52, 68, 73, 82],
       categories: {
-        'Building Materials': 35,
-        'Solar Products': 18, 
-        'Eco Accessories': 22,
-        'Garden & Home': 28,
-        'Packaging': 15,
-        'Kitchen & Dining': 12,
-        'Home Decor': 20,
-        'Fitness & Wellness': 8
+        'Plastic Products': 35,
+        'Paper Products': 28, 
+        'Glass Products': 22,
+        'Metal Products': 18,
+        'Textile & Fabric Products': 15,
+        'Wood Products': 12,
+        'E-Waste Products': 20,
+        'Organic Waste Products': 8
       }
     }
   });

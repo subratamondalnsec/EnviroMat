@@ -2,14 +2,33 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Award, Users, Clock, Leaf } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const WhyChooseUs = () => {
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
   const sectionRef = useRef(null);
   const statsRef = useRef([]);
+
+  // Theme-based styles
+  const themeStyles = {
+    background: isDarkMode ? 'bg-gray-900' : 'bg-[#F9FAFB]',
+    heading: isDarkMode ? 'text-white' : 'text-gray-900',
+    subtitle: isDarkMode ? 'text-gray-300' : 'text-gray-600',
+    statIconBg: isDarkMode ? 'bg-gray-700' : 'bg-gray-100',
+    statNumber: isDarkMode ? 'text-white' : 'text-gray-900',
+    statLabel: isDarkMode ? 'text-gray-300' : 'text-gray-700',
+    statDesc: isDarkMode ? 'text-gray-400' : 'text-gray-600',
+    benefitsBg: isDarkMode ? 'from-green-900/20 to-purple-900/20 border-gray-600' : 'from-green-50 to-purple-50 border-gray-300',
+    cardBg: isDarkMode ? 'bg-gray-800' : 'bg-white',
+    cardText: isDarkMode ? 'text-gray-300' : 'text-gray-600',
+    cardTitle: isDarkMode ? 'text-white' : 'text-gray-900'
+  };
 
   useEffect(() => {
     if (!sectionRef.current) return;
@@ -72,7 +91,7 @@ const WhyChooseUs = () => {
   ];
 
   return (
-    <section ref={sectionRef} className="py-20 bg-[#F9FAFB]">
+    <section ref={sectionRef} className={`py-20 ${themeStyles.background} transition-colors duration-300`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
           className="text-center mb-16"
@@ -81,10 +100,10 @@ const WhyChooseUs = () => {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+          <h2 className={`text-4xl lg:text-5xl font-bold ${themeStyles.heading} mb-6 transition-colors duration-300`}>
             Why Choose <span className="text-purple-400">Us</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className={`text-xl ${themeStyles.subtitle} max-w-3xl mx-auto transition-colors duration-300`}>
             We're more than just a supplier – we're your partners in building a sustainable future
           </p>
         </motion.div>
@@ -98,29 +117,29 @@ const WhyChooseUs = () => {
               className="text-center"
             >
               <div className="flex justify-center mb-4">
-                <div className="bg-gray-100 rounded-full p-4">
+                <div className={`${themeStyles.statIconBg} rounded-full p-4 transition-colors duration-300`}>
                   {stat.icon}
                 </div>
               </div>
-              <h3 className="text-3xl font-bold text-gray-900 mb-2">{stat.number}</h3>
-              <h4 className="text-lg font-semibold text-gray-700 mb-2">{stat.label}</h4>
-              <p className="text-gray-600 text-sm">{stat.description}</p>
+              <h3 className={`text-3xl font-bold ${themeStyles.statNumber} mb-2 transition-colors duration-300`}>{stat.number}</h3>
+              <h4 className={`text-lg font-semibold ${themeStyles.statLabel} mb-2 transition-colors duration-300`}>{stat.label}</h4>
+              <p className={`${themeStyles.statDesc} text-sm transition-colors duration-300`}>{stat.description}</p>
             </div>
           ))}
         </div>
 
         {/* Benefits Grid */}
-        <div className="bg-gradient-to-br from-green-50 to-purple-50 border border-gray-300 rounded-3xl p-8 lg:p-12">
+        <div className={`bg-gradient-to-br ${themeStyles.benefitsBg} border rounded-3xl p-8 lg:p-12 transition-colors duration-300`}>
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h3 className="text-3xl font-bold text-gray-900 mb-6">
+              <h3 className={`text-3xl font-bold ${themeStyles.heading} mb-6 transition-colors duration-300`}>
                 What Makes Us Different
               </h3>
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
                   <motion.div
                     key={index}
-                    className="flex items-center text-gray-700"
+                    className={`flex items-center ${themeStyles.cardText} transition-colors duration-300`}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -133,13 +152,13 @@ const WhyChooseUs = () => {
               </div>
             </div>
             <div className="relative">
-              <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className={`${themeStyles.cardBg} rounded-2xl p-8 shadow-lg transition-colors duration-300`}>
                 <div className="text-center">
                   <div className="text-5xl mb-4">🌱</div>
-                  <h4 className="text-xl font-bold text-gray-900 mb-2">
+                  <h4 className={`text-xl font-bold ${themeStyles.cardTitle} mb-2 transition-colors duration-300`}>
                     Join Our Green Community
                   </h4>
-                  <p className="text-gray-600">
+                  <p className={`${themeStyles.cardText} transition-colors duration-300`}>
                     Be part of a growing community committed to sustainable living and environmental responsibility.
                   </p>
                 </div>

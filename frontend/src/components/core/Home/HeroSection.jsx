@@ -1,8 +1,10 @@
+// components/core/Home/HeroSection.jsx
 import React, { useEffect, useRef } from "react";
 import { Leaf, Globe, Droplets } from "lucide-react";
 import ProTeamCard from "./ProTeamCard";
 import { motion } from "motion/react";
 import gsap from 'gsap';
+import { useSelector } from 'react-redux';
 
 const HeroSection = () => {
   const sectionRef = useRef(null);
@@ -14,6 +16,20 @@ const HeroSection = () => {
   const rightImageRef = useRef(null);
   const proTeamCardRef = useRef(null);
   const decorativeElementsRef = useRef([]);
+
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
+  // Theme-based styles
+  const themeStyles = {
+    background: isDarkMode ? 'bg-[#030404]' : 'bg-white',
+    text: isDarkMode ? 'text-white' : 'text-gray-900',
+    secondaryText: isDarkMode ? 'text-gray-300' : 'text-gray-600',
+    buttonPrimary: isDarkMode ? 'bg-green-600 hover:bg-green-700 text-white border-1 border-green-400' : 'bg-white border-2 border-gray-300 text-gray-700 hover:border-green-400',
+    buttonSecondary: isDarkMode ? 'bg-purple-600 hover:bg-purple-700 text-white border-1 border-purple-400' : 'bg-white border-2 border-gray-300 text-gray-700 hover:border-purple-400',
+    iconBg: isDarkMode ? 'bg-green-800 text-green-300' : 'bg-[#9cfdcc] text-[#52d091]',
+    iconHover: isDarkMode ? 'hover:bg-green-700' : 'hover:border-[#52d091]'
+  };
 
   // Add elements to refs arrays
   const addToIconsRefs = (el, index) => {
@@ -93,7 +109,7 @@ const HeroSection = () => {
     });
 
     // Create main timeline that runs immediately on load
-    const tl = gsap.timeline({ delay: 0.2 }); // Small delay for better visual impact
+    const tl = gsap.timeline({ delay: 0.2 });
 
     // Animate subtitle first
     tl.to(subtitle, {
@@ -207,10 +223,10 @@ const HeroSection = () => {
     return () => {
       tl.kill();
     };
-  }, []);
+  }, [isDarkMode]);
 
   return (
-    <section ref={sectionRef} className="relative min-h-screen overflow-hidden">
+    <section ref={sectionRef} className={`relative min-h-screen overflow-hidden ${themeStyles.background} transition-colors duration-300`}>
       <div className="max-w-full mx-auto sm:px-5 lg:pl-8 py-2 lg:py-3">
         <div className="grid lg:grid-cols-2 gap-10 items-center">
           {/* Left Content */}
@@ -219,11 +235,11 @@ const HeroSection = () => {
             <div className="title flex flex-col gap-4 mb-[6vh]">
               {/* Main Heading */}
               <div className="space-y-1">
-                <p ref={subtitleRef} className="text-gray-600 text-lg">
+                <p ref={subtitleRef} className={`${themeStyles.secondaryText} text-lg transition-colors duration-300`}>
                   Sculpting the Future with Green Materials
                 </p>
 
-                <h1 ref={headingRef} className="text-6xl lg:text-7xl font-medium text-gray-900 leading-tighter transform-gpu">
+                <h1 ref={headingRef} className={`text-6xl lg:text-7xl font-medium ${themeStyles.text} leading-tighter transform-gpu transition-colors duration-300`}>
                   Leading the Way
                   <br />
                   in <span className="text-[#08DF73]">Sustainable</span>
@@ -235,16 +251,16 @@ const HeroSection = () => {
               {/* CTA Buttons */}
               <div ref={buttonsRef} className="flex flex-col sm:flex-row gap-4 transform-gpu">
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-3 border-[1.5px] border-gray-300 rounded-full text-gray-700 font-medium hover:border-[#C27BFF] hover:text-[#C27BFF] transition-colors duration-300"
+                  className={`px-8 py-3 border-[1.5px] rounded-full font-medium transition-all duration-300 ${themeStyles.buttonPrimary}`}
                 >
                   Get Started
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-3 border-[1.5px] border-gray-300 rounded-full text-gray-700 font-medium hover:border-[#C27BFF] hover:text-[#C27BFF] transition-colors duration-300"
+                  className={`px-8 py-3 border-[1.5px] rounded-full font-medium transition-all duration-300 ${themeStyles.buttonSecondary}`}
                 >
                   Work with Us
                 </motion.button>
@@ -256,21 +272,21 @@ const HeroSection = () => {
               <div className="flex items-center space-x-4 pt-8 z-10">
                 <div 
                   ref={(el) => addToIconsRefs(el, 0)}
-                  className="w-12 h-12 bg-[#9cfdcc] rounded-full flex items-center justify-center border border-transparent hover:border-[#52d091] transition-all duration-300 transform-gpu cursor-pointer"
+                  className={`w-12 h-12 ${themeStyles.iconBg} rounded-full flex items-center justify-center border border-transparent ${themeStyles.iconHover} transition-all duration-300 transform-gpu cursor-pointer`}
                 >
-                  <Leaf className="w-6 h-6 text-[#52d091]" />
+                  <Leaf className="w-6 h-6" />
                 </div>
                 <div 
                   ref={(el) => addToIconsRefs(el, 1)}
-                  className="w-12 h-12 bg-[#9cfdcc] rounded-full flex items-center justify-center border border-transparent hover:border-[#52d091] transition-all duration-300 transform-gpu cursor-pointer"
+                  className={`w-12 h-12 ${themeStyles.iconBg} rounded-full flex items-center justify-center border border-transparent ${themeStyles.iconHover} transition-all duration-300 transform-gpu cursor-pointer`}
                 >
-                  <Globe className="w-6 h-6 text-[#52d091]" />
+                  <Globe className="w-6 h-6" />
                 </div>
                 <div 
                   ref={(el) => addToIconsRefs(el, 2)}
-                  className="w-12 h-12 bg-[#9cfdcc] rounded-full flex items-center justify-center border border-transparent hover:border-[#52d091] transition-all duration-300 transform-gpu cursor-pointer"
+                  className={`w-12 h-12 ${themeStyles.iconBg} rounded-full flex items-center justify-center border border-transparent ${themeStyles.iconHover} transition-all duration-300 transform-gpu cursor-pointer`}
                 >
-                  <Droplets className="w-6 h-6 text-[#52d091]" />
+                  <Droplets className="w-6 h-6" />
                 </div>
               </div>
               
@@ -327,11 +343,11 @@ const HeroSection = () => {
       {/* Decorative elements */}
       <div 
         ref={(el) => addToDecorativeRefs(el, 0)}
-        className="absolute top-20 right-10 w-32 h-32 bg-green-100 rounded-full opacity-20 blur-xl transform-gpu"
+        className={`absolute top-20 right-10 w-32 h-32 ${isDarkMode ? 'bg-green-800' : 'bg-green-100'} rounded-full opacity-20 blur-xl transform-gpu transition-colors duration-300`}
       ></div>
       <div 
         ref={(el) => addToDecorativeRefs(el, 1)}
-        className="absolute bottom-20 left-10 w-24 h-24 bg-green-200 rounded-full opacity-30 blur-lg transform-gpu"
+        className={`absolute bottom-20 left-10 w-24 h-24 ${isDarkMode ? 'bg-green-700' : 'bg-green-200'} rounded-full opacity-30 blur-lg transform-gpu transition-colors duration-300`}
       ></div>
     </section>
   );

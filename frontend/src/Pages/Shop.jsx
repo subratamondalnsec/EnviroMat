@@ -1,24 +1,33 @@
 // components/Shop.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, ShoppingCart, Plus } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import ProductCard from '../components/core/Shop/ProductCard';
 import AddProductForm from '../components/core/Shop/AddProductForm';
-import products from '../components/core/Shop/Data';
+import products from '../components/core/Shop/Data.jsx';
 import Checkout from './Checkout';
 import Footer from '../components/common/Footer';
+import { ITEM_CATEGORIES } from '../utils/constants';
+import { getAllItems, addToCard } from '../services/operations/orderAPI';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Shop = () => {
+  // Get user data from Redux store
+  const { user } = useSelector((state) => state.profile);
+  const { token } = useSelector((state) => state.auth);
+  
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [wishlist, setWishlist] = useState([]);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [productList, setProductList] = useState(products);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const [cartItems, setCartItems] = useState(() => {
     try {
@@ -34,7 +43,43 @@ const Shop = () => {
   const headerRef = useRef(null);
   const productsRef = useRef([]);
 
-  const categories = ['All', 'Building Materials', 'Solar Products', 'Eco Accessories', 'Garden & Home', 'Packaging'];
+  const categories = ['All', ...ITEM_CATEGORIES];
+
+  // Function to fetch items from API
+  const fetchItemsFromAPI = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const apiItems = await getAllItems();
+      
+      if (apiItems && Array.isArray(apiItems)) {
+        // Transform API response to match frontend product structure
+        const transformedItems = apiItems.map(item => ({
+          id: item._id || item.id || Date.now() + Math.random(),
+          name: item.product?.title || item.title || 'Unknown Product',
+          description: item.product?.description || item.description || 'No description available',
+          price: item.product?.price || item.price || 0,
+          category: item.product?.category || item.category || 'Other',
+          image: item.image || '/default-product.jpg',
+          rating: item.rating || 0,
+          reviews: item.reviews || 0,
+          isNew: true,
+          originalPrice: (item.product?.price || item.price || 0) * 1.2,
+          discount: 0
+        }));
+        
+        // Combine API items with static products
+        setProductList([...transformedItems, ...products]);
+      }
+    } catch (error) {
+      console.error('Error fetching items from API:', error);
+      setError('Failed to load some items from server');
+      // Still show static products even if API fails
+      setProductList(products);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -50,6 +95,9 @@ const Shop = () => {
     } catch (error) {
       console.error('Error loading state from localStorage:', error);
     }
+    
+    // Fetch items from API on component mount
+    fetchItemsFromAPI();
   }, []);
 
   useEffect(() => {
@@ -79,16 +127,38 @@ const Shop = () => {
   // Filter products based on category and search
   const filteredProducts = productList.filter(product => {
     const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Handle both static products (with 'name') and API products (with 'title')
+    const productName = product.name || product.product?.title || product.title || '';
+    const productDescription = product.description || product.product?.description || '';
+    
+    const matchesSearch = productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         productDescription.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
   // Handle new product submission from the form
   const handleAddProduct = (newProduct) => {
-    setProductList(prev => [newProduct, ...prev]);
+    // Transform API response to match frontend product structure
+    const transformedProduct = {
+      id: newProduct.order?._id || newProduct._id || Date.now(),
+      name: newProduct.order?.product?.title || newProduct.product?.title || newProduct.title,
+      description: newProduct.order?.product?.description || newProduct.product?.description || newProduct.description,
+      price: newProduct.order?.product?.price || newProduct.product?.price || newProduct.price,
+      category: newProduct.order?.product?.category || newProduct.product?.category || newProduct.category,
+      image: newProduct.order?.image || newProduct.image,
+      rating: 0,
+      reviews: 0,
+      isNew: true,
+      originalPrice: (newProduct.order?.product?.price || newProduct.product?.price || newProduct.price) * 1.2,
+      discount: 0
+    };
+    
+    setProductList(prev => [transformedProduct, ...prev]);
     setShowAddForm(false);
-    alert('Product added successfully!');
+    
+    // Optionally refresh the entire list from API to ensure consistency
+    // fetchItemsFromAPI();
   };
 
   // Handle showing add form
@@ -102,18 +172,67 @@ const Shop = () => {
   };
 
   // Existing functions...
-  const addToCart = (product) => {
-    setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item => 
-          item.id === product.id 
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+  const addToCart = async (product) => {
+    console.log('Attempting to add to cart:', product);
+    try {
+      // If user is logged in, add to cart via API
+      console.log('User:', user);
+      console.log('Token:', token);
+      console.log('Product ID:', product.id);
+      if (user && token && product.id) {
+
+        console.log('User is logged in, adding to cart via API');
+        const data = {
+          buyerId: user._id,
+          orderId: product.id
+        };
+        
+        console.log('Adding to cart:', data);
+        await addToCard(data);
+        console.log(`Item added to cart in backend: ${product.name || product.title}`);
       }
-      return [...prev, { ...product, quantity: 1 }];
-    });
+
+      // Update local cart state
+      setCartItems(prev => {
+        const existing = prev.find(item => item.id === product.id || item.id === product._id);
+        if (existing) {
+          return prev.map(item => 
+            (item.id === product.id || item.id === product._id)
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          );
+        }
+        
+        // Create a normalized product object for local cart
+        const cartItem = {
+          id: product.id || product._id,
+          name: product.name || product.title,
+          description: product.description,
+          price: product.price || product.product?.price,
+          category: product.category || product.product?.category,
+          image: product.image,
+          rating: product.rating || 0,
+          reviews: product.reviews || 0,
+          quantity: 1
+        };
+        
+        return [...prev, cartItem];
+      });
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      // Still add to local cart even if API fails
+      setCartItems(prev => {
+        const existing = prev.find(item => item.id === product.id || item.id === product._id);
+        if (existing) {
+          return prev.map(item => 
+            (item.id === product.id || item.id === product._id)
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          );
+        }
+        return [...prev, { ...product, id: product.id || product._id, quantity: 1 }];
+      });
+    }
   };
 
   const incrementQuantity = (productId) => {
@@ -315,7 +434,17 @@ const Shop = () => {
               </div>
 
               {/* Add Item Button */}
-              <div className="flex justify-end mb-8">
+              <div className="flex justify-end mb-8 gap-3">
+                <button
+                  onClick={fetchItemsFromAPI}
+                  disabled={loading}
+                  className="bg-green-500 hover:bg-green-600 text-white font-semibold flex items-center gap-2 rounded-full px-4 py-2 shadow-md transition-all duration-300 hover:scale-102 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>Refresh</span>
+                </button>
                 <button
                   onClick={handleShowAddForm}
                   className="bg-[#cb8fff] border border-[#C27BFF] hover:bg-[#d2a4fa] text-gray-700 font-semibold flex items-center gap-2 rounded-full px-3 py-2 shadow-md transition-all duration-300 hover:scale-102"
@@ -359,6 +488,25 @@ const Shop = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Loading State */}
+              {loading && (
+                <div className="text-center py-8">
+                  <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
+                    Loading items from server...
+                  </div>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {error && (
+                <div className="text-center py-4">
+                  <div className="inline-flex items-center px-4 py-2 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+                    ⚠️ {error}
+                  </div>
+                </div>
+              )}
 
               {/* Products Grid */}
               <AnimatePresence mode="wait">

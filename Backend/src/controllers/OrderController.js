@@ -19,41 +19,56 @@ exports.getAllItems = async (req, res) => {
 
 exports.createOrder = async (req, res) => {
   try {
-    const { sellerId, product, image, address } = req.body;
+    const { product, image, address } = req.body;
+    const sellerId = req.user.id; // Get seller ID from authenticated user
 
     if (!product || !product.title || !product.description) {
-      return res.status(400).json({ message: "Product title and description are required" });
+      return res.status(400).json({ success: false, message: "Product title and description are required" });
     }
 
     if (product.title.length < 5 || product.title.length > 20) {
-      return res.status(400).json({ message: "Product title must be between 5 and 20 characters" });
+      return res.status(400).json({ success: false, message: "Product title must be between 5 and 20 characters" });
     }
 
-    if (product.description.length < 20 || product.description.length > 50) {
-      return res.status(400).json({ message: "Product description must be between 20 and 50 characters" });
+    if (product.description.length < 25 || product.description.length > 50) {
+      return res.status(400).json({ success: false, message: "Product description must be between 25 and 50 characters" });
     }
+
+    if (!address || address.trim().length === 0) {
+      return res.status(400).json({ success: false, message: "Address is required" });
+    }
+    console.log("Seller ID:", sellerId);
+    console.log("Product Data:", product);
+    console.log("Address:", address);
+    console.log("Image Data:", image);
+    
+    const uploadedImage = await uploadImageToCloudinary(
+      image,
+      process.env.CLOUDINARY_FOLDER || "product"
+    );
+    
 
     const newOrder = new Order({
       sellerId,
       product,
-      address,
-      image,
+      address: address.trim(),
+      image: uploadedImage.secure_url,
       orderedAt: new Date()
     });
 
     await newOrder.save();
 
     // Add to seller's sellingOrders
-    const user=await User.findByIdAndUpdate(sellerId, {
+    const user = await User.findByIdAndUpdate(sellerId, {
       $push: { sellingOrders: newOrder._id }
-    },{new:true});
+    }, { new: true });
 
-    console.log("Order created successfully",newOrder,user);
+    console.log("Order created successfully", newOrder, user);
 
-    res.status(201).json({ message: "Order created successfully", order: newOrder });
+    res.status(201).json({ success: true, message: "Order created successfully", order: newOrder });
   } catch (error) {
     console.error("Error creating order:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

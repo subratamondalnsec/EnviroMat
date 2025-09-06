@@ -9,7 +9,7 @@ import gsap from "gsap";
 import UserDropdown from "./NavbarComponents/UserDropdown";
 
 // Import logout thunk
-import { logoutUser } from "../../slices/authSlice";
+import { logout } from "../../services/operations/authAPI";
 import { ACCOUNT_TYPE } from "../../utils/constants.jsx";
 import { isPickerProfileComplete } from "../../utils/profileUtils.js";
 
@@ -48,8 +48,7 @@ const PickerNavbar = () => {
   // Handle logout
   const handleLogout = async () => {
     try {
-      const accountType = user?.accountType || "User";
-      await dispatch(logoutUser({ accountType, navigate })).unwrap();
+      dispatch(logout(navigate));
       setIsDropdownOpen(false);
     } catch (error) {
       console.error("Logout error:", error);

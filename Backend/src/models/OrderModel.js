@@ -68,16 +68,16 @@ const orderSchema = new mongoose.Schema({
     category: {
       type: String,
       enum: [
-        "Recycled Plastic Products",
-        "Recycled Paper Products",
-        "Recycled Glass Products",
-        "Recycled Metal Products",
-        "Recycled Textile & Fabric Products",
-        "Recycled Wood Products",
-        "Recycled Rubber Products",
-        "E-Waste Recycled Products",
-        "Organic Waste Recycled Products",
-        "Mixed Recycled Products"
+        "Plastic Products",
+        "Paper Products",
+        "Glass Products",
+        "Metal Products",
+        "Textile & Fabric Products",
+        "Wood Products",
+        "Rubber Products",
+        "E-Waste Products",
+        "Organic Waste Products",
+        "Mixed Products"
       ],
       required: true,
     },

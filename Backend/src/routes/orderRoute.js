@@ -4,12 +4,13 @@ const router = express.Router();
 const Order = require("../models/OrderModel");
 const User = require("../models/User");
 const { createOrder, requestOrder,getAllItems, addToCard,cancelFromAddToCard, cancelRequestOfOrder,createmultiplkeOrder, getAllOrdersByUser, getAllAddToCardsByUser } = require("../controllers/OrderController");
+const { auth } = require("../middleware/auth");
 
-// Create new order
-router.post("/create",createOrder);
+// Create new order (requires authentication)
+router.post("/create", auth, createOrder);
 
-// Request an order
-router.post("/request-order",requestOrder);
+// Request an order (requires authentication)
+router.post("/request-order", auth, requestOrder);
 
 // Get all orders for a user
 router.get("/get-all-orders/user/:userId",getAllOrdersByUser)

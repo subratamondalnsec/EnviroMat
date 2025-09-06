@@ -5,7 +5,7 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"
 import { useDispatch } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
 
-import { loginUser } from "../../../slices/authSlice"
+import { login } from "../../../services/operations/authAPI";
 import { ACCOUNT_TYPE } from "../../../utils/constants.jsx"
 import Tab from "./Tab"
 
@@ -34,12 +34,7 @@ export default function LoginForm() {
     e.preventDefault()
     console.log("Form submitted:", formData, "Account type:", accountType);
     
-    dispatch(loginUser({ 
-      email, 
-      password, 
-      accountType, 
-      navigate 
-    }))
+    dispatch(login(email, password, navigate, null, accountType))
   }
 
   const tabData = [

@@ -70,7 +70,7 @@ const UserProfile = () => {
       date: '2025-01-12',
       type: 'spent',
       amount: 150,
-      description: 'Purchased bamboo building materials'
+      description: 'Purchased wood products'
     },
     {
       date: '2025-01-10',
@@ -82,7 +82,7 @@ const UserProfile = () => {
       date: '2025-01-08',
       type: 'spent',
       amount: 90,
-      description: 'Eco-friendly packaging materials'
+      description: 'Textile & fabric products'
     },
     {
       date: '2025-01-05',

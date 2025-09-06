@@ -57,12 +57,3 @@ export const orderEndpoints = {
   GET_ALL_ORDERS_BY_USER_API: BASE_URL + "/order/get-all-orders/user",
   GET_ALL_ADD_TO_CARDS_BY_USER_API: BASE_URL + "/order/get-all-addtocards/user",
 };
-
-export const orderEndPoints = {
-  GET_ALL_ITEMS:BASE_URL+'/order/get-items',
-  REQUEST_ORDER_API: BASE_URL + "/order/request-order",
-  CANCEL_ORDER_API: BASE_URL + "/order/cancel-order",
-  ADD_TO_CART_API: BASE_URL + "/order/add-to-card",
-  GET_ALL_CART_ITEMS_API: BASE_URL + "/order/get-all-addtocard/user",
-  GET_ALL_ORDERS_API: BASE_URL + "/order/get-all-orders/user",
-};

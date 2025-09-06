@@ -12,22 +12,22 @@ router.post("/create", auth, createOrder);
 // Request an order (requires authentication)
 router.post("/request-order", auth, requestOrder);
 
-// Get all orders for a user
-router.get("/get-all-orders/user/:userId",getAllOrdersByUser)
+// Get all orders for a user (requires authentication)
+router.get("/get-all-orders/user/:userId", auth, getAllOrdersByUser)
 
-// Get all addToCards for a user
-router.post("/get-all-addtocards/user",getAllAddToCardsByUser)
+// Get all addToCards for a user (requires authentication)
+router.post("/get-all-addtocards/user", auth, getAllAddToCardsByUser)
 
-// Add to cart
-router.post("/add-to-card",addToCard)
+// Add to cart (requires authentication)
+router.post("/add-to-card", auth, addToCard)
 
-// Cancel order request
-router.post('/cancel-order',cancelRequestOfOrder)
+// Cancel order request (requires authentication)
+router.post('/cancel-order', auth, cancelRequestOfOrder)
 
-// Cancel from add to card
-router.post('/cancel-from-addtocard',cancelFromAddToCard)
+// Cancel from add to card (requires authentication)
+router.post('/cancel-from-addtocard', auth, cancelFromAddToCard)
 
-// get all items listed items to show in shop
+// get all items listed items to show in shop (public route)
 router.get("/get-items",getAllItems);
 
 module.exports = router;

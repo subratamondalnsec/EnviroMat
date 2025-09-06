@@ -26,9 +26,18 @@ const PickupRequestSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    quantity: {
+    userQuantity: {   // ✅ Quantity entered by user
         type: Number,
         required: true
+    },
+    verifiedQuantity: {  // ✅ Quantity verified by picker
+        type: Number,
+        default: null
+    },
+    qualityRating: {   // ✅ Picker’s quality verification
+        type: String,
+        enum: ["low", "medium", "high"],
+        default: null
     },
     location: {
         lat: {
@@ -42,7 +51,7 @@ const PickupRequestSchema = new mongoose.Schema({
     },
     creditPoints:{
         type:Number,
-        min:5
+        default:null
     },
     address: {
       street: {
@@ -73,7 +82,7 @@ const PickupRequestSchema = new mongoose.Schema({
     },
     pickupStatus: {
         type: String,
-        enum: ["processing", "assigned", "delivered", "cancelled"],
+        enum: ["processing", "assigned", "in_progress", "completed", "cancelled"],
         default: "processing",
     },
     date: {

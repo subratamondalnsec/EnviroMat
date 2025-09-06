@@ -229,7 +229,7 @@ exports.getAllOrdersByUser = async (req, res) => {
 // 2️⃣ Get all Add-to-Cart orders from user model
 exports.getAllAddToCardsByUser = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { userId } = req.body;
 
     const user = await User.findById(userId).populate("addToCards");
 

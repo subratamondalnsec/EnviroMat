@@ -155,15 +155,6 @@ const Shop = () => {
     }
   };
 
-
-  // Initialize effects
-  useEffect(() => {
-    checkScrollPosition();
-    const handleResize = () => checkScrollPosition();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [categories]);
-
   useEffect(() => {
     try {
       const savedShowCheckout = localStorage.getItem('showCheckout');
@@ -180,7 +171,17 @@ const Shop = () => {
     }
     
     fetchItemsFromAPI();
+    
+    // Don't sync cart automatically on mount
+    // syncCartFromBackend();
   }, []);
+
+  // Don't sync cart when user changes automatically
+  // useEffect(() => {
+  //   if (user && token) {
+  //     syncCartFromBackend();
+  //   }
+  // }, [user, token]);
 
   useEffect(() => {
     try {
@@ -343,6 +344,7 @@ const Shop = () => {
   };
 
   const handleCheckout = async(e) => {
+  const handleCheckout = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -352,6 +354,9 @@ const Shop = () => {
     }
 
      await syncCartFromBackend();
+    
+    // Sync cart from backend before showing checkout
+    await syncCartFromBackend();
     
     setShowCheckout(true);
   };

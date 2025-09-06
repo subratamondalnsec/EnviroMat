@@ -1,14 +1,14 @@
 // components/Shop.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, ShoppingCart, X } from 'lucide-react';
+import { Search, ShoppingCart, Plus } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import ProductCard from '../components/core/Shop/ProductCard';
+import AddProductForm from '../components/core/Shop/AddProductForm';
 import products from '../components/core/Shop/Data';
-import Checkout from './Checkout'; // Import Checkout component
+import Checkout from './Checkout';
 import Footer from '../components/common/Footer';
-
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -16,11 +16,10 @@ const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [wishlist, setWishlist] = useState([]);
-  
-  // NEW: State for checkout popup
   const [showCheckout, setShowCheckout] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [productList, setProductList] = useState(products);
 
-  // NEW: Initialize cart from localStorage
   const [cartItems, setCartItems] = useState(() => {
     try {
       const savedCart = localStorage.getItem('cartItems');
@@ -37,7 +36,6 @@ const Shop = () => {
 
   const categories = ['All', 'Building Materials', 'Solar Products', 'Eco Accessories', 'Garden & Home', 'Packaging'];
 
-  // NEW: Load checkout state from localStorage on component mount
   useEffect(() => {
     try {
       const savedShowCheckout = localStorage.getItem('showCheckout');
@@ -54,7 +52,6 @@ const Shop = () => {
     }
   }, []);
 
-  // NEW: Save cart items to localStorage whenever cart changes
   useEffect(() => {
     try {
       localStorage.setItem('cartItems', JSON.stringify(cartItems));
@@ -63,7 +60,6 @@ const Shop = () => {
     }
   }, [cartItems]);
 
-  // NEW: Save checkout state to localStorage
   useEffect(() => {
     try {
       localStorage.setItem('showCheckout', JSON.stringify(showCheckout));
@@ -72,7 +68,6 @@ const Shop = () => {
     }
   }, [showCheckout]);
 
-  // NEW: Save wishlist to localStorage
   useEffect(() => {
     try {
       localStorage.setItem('wishlist', JSON.stringify(wishlist));
@@ -82,14 +77,31 @@ const Shop = () => {
   }, [wishlist]);
 
   // Filter products based on category and search
-  const filteredProducts = products.filter(product => {
+  const filteredProducts = productList.filter(product => {
     const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
-  // Add to cart function
+  // Handle new product submission from the form
+  const handleAddProduct = (newProduct) => {
+    setProductList(prev => [newProduct, ...prev]);
+    setShowAddForm(false);
+    alert('Product added successfully!');
+  };
+
+  // Handle showing add form
+  const handleShowAddForm = () => {
+    setShowAddForm(true);
+  };
+
+  // Handle closing add form
+  const handleCloseAddForm = () => {
+    setShowAddForm(false);
+  };
+
+  // Existing functions...
   const addToCart = (product) => {
     setCartItems(prev => {
       const existing = prev.find(item => item.id === product.id);
@@ -104,7 +116,6 @@ const Shop = () => {
     });
   };
 
-  // Increment quantity function
   const incrementQuantity = (productId) => {
     setCartItems(prev => 
       prev.map(item => 
@@ -115,7 +126,6 @@ const Shop = () => {
     );
   };
 
-  // Decrement quantity function
   const decrementQuantity = (productId) => {
     setCartItems(prev => {
       return prev.map(item => {
@@ -131,13 +141,11 @@ const Shop = () => {
     });
   };
 
-  // Get quantity of item in cart
   const getCartQuantity = (productId) => {
     const cartItem = cartItems.find(item => item.id === productId);
     return cartItem ? cartItem.quantity : 0;
   };
 
-  // Toggle wishlist
   const toggleWishlist = (productId) => {
     setWishlist(prev => 
       prev.includes(productId) 
@@ -146,14 +154,12 @@ const Shop = () => {
     );
   };
 
-  // Handle category selection
   const handleCategoryClick = (e, category) => {
     e.preventDefault();
     e.stopPropagation();
     setSelectedCategory(category);
   };
 
-  // Handle clear filters
   const handleClearFilters = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -161,7 +167,6 @@ const Shop = () => {
     setSelectedCategory('All');
   };
 
-  // NEW: Updated checkout handler to show popup instead of routing
   const handleCheckout = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -174,27 +179,22 @@ const Shop = () => {
     setShowCheckout(true);
   };
 
-  // NEW: Handle checkout close
   const handleCheckoutClose = () => {
     setShowCheckout(false);
   };
 
-  // NEW: Handle order completion
   const handleOrderComplete = (orderData) => {
     console.log('Order completed:', orderData);
     
-    // Clear cart and close checkout
     setCartItems([]);
     setShowCheckout(false);
     
-    // Clear localStorage
     localStorage.removeItem('cartItems');
     localStorage.removeItem('showCheckout');
     
     alert('Order placed successfully! Thank you for choosing sustainable materials.');
   };
 
-  // Add refs to array
   const addToProductsRefs = (el, index) => {
     if (el && !productsRef.current.includes(el)) {
       productsRef.current[index] = el;
@@ -203,7 +203,7 @@ const Shop = () => {
 
   // GSAP Animations
   useEffect(() => {
-    if (showCheckout) return; // Don't animate if checkout is showing
+    if (showCheckout || showAddForm) return;
 
     const header = headerRef.current;
     const products = productsRef.current.filter(Boolean);
@@ -247,11 +247,10 @@ const Shop = () => {
     return () => {
       ScrollTrigger.getAll().forEach(st => st.kill());
     };
-  }, [showCheckout]);
+  }, [showCheckout, showAddForm]);
 
   return (
     <>
-      {/* NEW: Conditional rendering - show checkout popup or shop */}
       <AnimatePresence mode="wait">
         {showCheckout ? (
           <motion.div
@@ -307,7 +306,6 @@ const Shop = () => {
                   Discover our curated collection of eco-friendly materials and products designed for a sustainable future.
                 </p>
                 
-                {/* NEW: Show cart persistence indicator */}
                 {cartItems.length > 0 && (
                   <div className="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
                     <ShoppingCart className="w-4 h-4" />
@@ -315,9 +313,15 @@ const Shop = () => {
                   </div>
                 )}
               </div>
-              <div>
-                <button>
-                  Add Item 
+
+              {/* Add Item Button */}
+              <div className="flex justify-end mb-8">
+                <button
+                  onClick={handleShowAddForm}
+                  className="bg-[#cb8fff] border border-[#C27BFF] hover:bg-[#d2a4fa] text-gray-700 font-semibold flex items-center gap-2 rounded-full px-3 py-2 shadow-md transition-all duration-300 hover:scale-102"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Add Item</span>
                 </button>
               </div>
 
@@ -437,9 +441,16 @@ const Shop = () => {
           </motion.section>
         )}
       </AnimatePresence>
+
+      {/* Add Product Form Component */}
+      <AddProductForm
+        isOpen={showAddForm}
+        onClose={handleCloseAddForm}
+        onSubmit={handleAddProduct}
+        categories={categories.filter(cat => cat !== 'All')}
+      />
       
-      {/* Footer - Only show when not in checkout mode */}
-      {!showCheckout && <Footer />}
+      {!showCheckout && !showAddForm && <Footer />}
     </>
   );
 };

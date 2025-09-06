@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, ShoppingCart, Plus } from 'lucide-react';
+import { Search, ShoppingCart, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import ProductCard from '../components/core/Shop/ProductCard';
@@ -29,6 +29,11 @@ const Shop = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // New state for horizontal scrolling
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
+  const scrollContainerRef = useRef(null);
+
   const [cartItems, setCartItems] = useState(() => {
     try {
       const savedCart = localStorage.getItem('cartItems');
@@ -44,6 +49,43 @@ const Shop = () => {
   const productsRef = useRef([]);
 
   const categories = ['All', ...ITEM_CATEGORIES];
+
+  // Check scroll position and update arrow visibility
+  const checkScrollPosition = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setShowLeftArrow(scrollLeft > 0);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  // Scroll left function
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: -200,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Scroll right function
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: 200,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Check arrow visibility on mount and resize
+  useEffect(() => {
+    checkScrollPosition();
+    const handleResize = () => checkScrollPosition();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [categories]);
 
   // Function to fetch items from API
   const fetchItemsFromAPI = async () => {
@@ -156,9 +198,6 @@ const Shop = () => {
     
     setProductList(prev => [transformedProduct, ...prev]);
     setShowAddForm(false);
-    
-    // Optionally refresh the entire list from API to ensure consistency
-    // fetchItemsFromAPI();
   };
 
   // Handle showing add form
@@ -180,7 +219,6 @@ const Shop = () => {
       console.log('Token:', token);
       console.log('Product ID:', product.id);
       if (user && token && product.id) {
-
         console.log('User is logged in, adding to cart via API');
         const data = {
           buyerId: user._id,
@@ -454,7 +492,7 @@ const Shop = () => {
                 </button>
               </div>
 
-              {/* Search and Filter Section */}
+              {/* Search and Filter Section - Updated with Horizontal Scroll */}
               <div className="mb-12">
                 <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
                   {/* Search Bar */}
@@ -469,22 +507,58 @@ const Shop = () => {
                     />
                   </div>
 
-                  {/* Category Filter */}
-                  <div className="flex flex-wrap gap-3">
-                    {categories.map((category) => (
-                      <button
-                        key={category}
-                        type="button"
-                        onClick={(e) => handleCategoryClick(e, category)}
-                        className={`px-6 py-2 rounded-full font-medium transition-all duration-300 bg-[#0ae979] border border-gray-300 hover:border-[#08DF73] hover:bg-[#eff8d8] text-gray-700 ${
-                          selectedCategory === category
-                            ? 'bg-[#5DE584]'
-                            : 'bg-white '
-                        }`}
+                  {/* Horizontal Scrolling Category Filter */}
+                  <div className="flex-1 lg:flex-initial max-w-full lg:max-w-2xl">
+                    <div className="relative">
+                      {/* Left Arrow */}
+                      {showLeftArrow && (
+                        <button
+                          onClick={scrollLeft}
+                          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-300 rounded-full p-2 shadow-lg hover:bg-gray-50 transition-all duration-200"
+                          style={{ marginLeft: '-12px' }}
+                        >
+                          <ChevronLeft className="w-4 h-4 text-gray-600" />
+                        </button>
+                      )}
+
+                      {/* Scrollable Container */}
+                      <div
+                        ref={scrollContainerRef}
+                        className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-6"
+                        onScroll={checkScrollPosition}
+                        style={{
+                          scrollbarWidth: 'none',
+                          msOverflowStyle: 'none',
+                          WebkitOverflowScrolling: 'touch'
+                        }}
                       >
-                        {category}
-                      </button>
-                    ))}
+                        {categories.map((category) => (
+                          <button
+                            key={category}
+                            type="button"
+                            onClick={(e) => handleCategoryClick(e, category)}
+                            className={`px-6 py-2 rounded-full font-medium transition-all duration-300 whitespace-nowrap flex-shrink-0 ${
+                              selectedCategory === category
+                                ? 'bg-[#5DE584] border border-[#08DF73] text-gray-700'
+                                : 'bg-white border border-gray-300 hover:border-[#08DF73] hover:bg-[#eff8d8] text-gray-700'
+                            }`}
+                          >
+                            {category}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Right Arrow */}
+                      {showRightArrow && (
+                        <button
+                          onClick={scrollRight}
+                          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-300 rounded-full p-2 shadow-lg hover:bg-gray-50 transition-all duration-200"
+                          style={{ marginRight: '-12px' }}
+                        >
+                          <ChevronRight className="w-4 h-4 text-gray-600" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -599,6 +673,17 @@ const Shop = () => {
       />
       
       {!showCheckout && !showAddForm && <Footer />}
+
+      {/* Custom scrollbar hiding styles */}
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </>
   );
 };

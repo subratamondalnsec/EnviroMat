@@ -48,7 +48,7 @@ const Footer = () => {
 
   return (
     <footer ref={footerRef} className="bg-black relative">
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-4 relative z-10">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-4 relative">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Left Column - Logo and Navigation */}
           <motion.div 

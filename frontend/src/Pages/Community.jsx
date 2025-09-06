@@ -1,3 +1,4 @@
+// CommunityPage.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Plus } from "lucide-react";
@@ -9,10 +10,10 @@ import CreatePostModal from "../components/core/Community/CreatePost";
 import BlogFilters from "../components/core/Community/BlogFilters";
 import BlogDetailsModal from "../components/core/Community/BlogDetailsModal";
 import EditPostModal from "../components/core/Community/EditPostModal";
+import Leaderboard from "../components/core/Community/Leaderboard";
 import Footer from "../components/common/Footer";
 import { getAllBlogs, toggleLikeBlog, addCommentToBlog } from "../services/operations/communityApi";
 import { setLoading, setBlogs, removeBlog } from "../slices/communitySlice";
-
 
 const CommunityPage = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -92,8 +93,6 @@ const CommunityPage = () => {
 
   // Event handlers
   const handleAddPost = (newPost) => {
-    // The post will be added to Redux state via the createBlog API call
-    // No need to manually update local state
     setShowCreateModal(false);
   };
 
@@ -162,7 +161,7 @@ const CommunityPage = () => {
           }}
         />
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Header */}
           <div
             ref={headerRef}
@@ -213,67 +212,77 @@ const CommunityPage = () => {
           {/* Blog Filters */}
           <BlogFilters onFilterChange={handleFilterChange} />
 
-          {/* Posts Grid */}
-          <div className="columns-1 md:columns-2 gap-6 space-y-6">
-            {loading ? (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="w-full text-center py-16"
-              >
-                <div className="text-6xl mb-4">🔄</div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  Loading posts...
-                </h3>
-                <p className="text-gray-600">
-                  Please wait while we fetch the latest community posts
-                </p>
-              </motion.div>
-            ) : displayBlogs.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="w-full text-center py-16"
-              >
-                <div className="text-6xl mb-4">🌱</div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  {blogs.length === 0 ? "No posts yet" : "No posts found"}
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  {blogs.length === 0 
-                    ? "Be the first to share your sustainable journey!"
-                    : "Try changing your filter or create a new post!"
-                  }
-                </p>
-                {blogs.length === 0 && (
-                  <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="bg-green-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-green-600 transition-colors duration-300"
+          {/* Main Content Layout with Leaderboard */}
+          <div className="flex gap-8">
+            {/* Posts Section */}
+            <div className="flex-1">
+              <div className="columns-1 md:columns-2 gap-6 space-y-6">
+                {loading ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="w-full text-center py-16"
                   >
-                    Create First Post
-                  </button>
+                    <div className="text-6xl mb-4">🔄</div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      Loading posts...
+                    </h3>
+                    <p className="text-gray-600">
+                      Please wait while we fetch the latest community posts
+                    </p>
+                  </motion.div>
+                ) : displayBlogs.length === 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="w-full text-center py-16"
+                  >
+                    <div className="text-6xl mb-4">🌱</div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      {blogs.length === 0 ? "No posts yet" : "No posts found"}
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      {blogs.length === 0 
+                        ? "Be the first to share your sustainable journey!"
+                        : "Try changing your filter or create a new post!"
+                      }
+                    </p>
+                    {blogs.length === 0 && (
+                      <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="bg-green-500 text-white px-8 py-3 rounded-full font-semibold hover:bg-green-600 transition-colors duration-300"
+                      >
+                        Create First Post
+                      </button>
+                    )}
+                  </motion.div>
+                ) : (
+                  displayBlogs.map((post, idx) => (
+                    <motion.div
+                      key={post._id}
+                      className="break-inside-avoid mb-6 w-full"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: idx * 0.1 }}
+                    >
+                      <PostCard
+                        post={post}
+                        onLike={() => handleLike(post._id)}
+                        onAddComment={(comment) => handleAddComment(post._id, comment)}
+                        onViewDetails={handleViewDetails}
+                        onEditPost={handleEditPost}
+                        refSetter={(el) => addPostRef(el, idx)}
+                      />
+                    </motion.div>
+                  ))
                 )}
-              </motion.div>
-            ) : (
-              displayBlogs.map((post, idx) => (
-                <motion.div
-                  key={post._id}
-                  className="break-inside-avoid mb-6 w-full"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: idx * 0.1 }}
-                >
-                  <PostCard
-                    post={post}
-                    onLike={() => handleLike(post._id)}
-                    onAddComment={(comment) => handleAddComment(post._id, comment)}
-                    onViewDetails={handleViewDetails}
-                    onEditPost={handleEditPost}
-                    refSetter={(el) => addPostRef(el, idx)}
-                  />
-                </motion.div>
-              ))
-            )}
+              </div>
+            </div>
+
+            {/* Leaderboard Sidebar */}
+            <div className="w-80 hidden lg:block">
+              <Leaderboard blogs={blogs} />
+            </div>
           </div>
         </div>
       </section>

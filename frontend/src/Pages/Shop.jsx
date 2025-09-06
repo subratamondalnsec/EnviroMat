@@ -11,7 +11,7 @@ import products from '../components/core/Shop/Data.jsx';
 import Checkout from './Checkout';
 import Footer from '../components/common/Footer';
 import { ITEM_CATEGORIES } from '../utils/constants';
-import { getAllItems, addToCard } from '../services/operations/orderAPI';
+import { getAllItems, addToCard, cancelRequestOfOrder, cancelFromAddToCard } from '../services/operations/orderAPI';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -296,6 +296,49 @@ const Shop = () => {
         return item;
       }).filter(Boolean);
     });
+  };
+
+  // Function to cancel order request
+  const cancelOrderRequest = async (product) => {
+    try {
+      if (user && token && product.id) {
+        const data = {
+          buyerId: user._id,
+          orderId: product.id
+        };
+        
+        await cancelRequestOfOrder(data);
+        console.log(`Order request cancelled for: ${product.name || product.title}`);
+        
+        // Optionally refresh the items list
+        fetchItemsFromAPI();
+      }
+    } catch (error) {
+      console.error('Error cancelling order request:', error);
+      alert('Failed to cancel order request. Please try again.');
+    }
+  };
+
+  // Function to remove item from cart
+  const removeFromCart = async (product) => {
+    try {
+      if (user && token && product.id) {
+        const data = {
+          buyerId: user._id,
+          orderId: product.id
+        };
+        
+        await cancelFromAddToCard(data);
+        console.log(`Item removed from cart in backend: ${product.name || product.title}`);
+      }
+
+      // Update local cart state
+      setCartItems(prev => prev.filter(item => item.id !== product.id && item.id !== product._id));
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+      // Still remove from local cart even if API fails
+      setCartItems(prev => prev.filter(item => item.id !== product.id && item.id !== product._id));
+    }
   };
 
   const getCartQuantity = (productId) => {
@@ -600,6 +643,8 @@ const Shop = () => {
                       onIncrement={incrementQuantity}
                       onDecrement={decrementQuantity}
                       onToggleWishlist={toggleWishlist}
+                      onCancelOrder={cancelOrderRequest}
+                      onRemoveFromCart={removeFromCart}
                       isInWishlist={wishlist.includes(product.id)}
                       cartQuantity={getCartQuantity(product.id)}
                       addToRefs={addToProductsRefs}

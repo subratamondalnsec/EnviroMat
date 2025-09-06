@@ -1,13 +1,15 @@
 // components/ProductCard.jsx
 import React from 'react';
 import { FaHeart } from "react-icons/fa";
-import { Star, ShoppingCart, Heart, Plus, Minus, Coins } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Plus, Minus, Coins, X } from 'lucide-react';
 const ProductCard = ({
   product,
   onAddToCart,
   onToggleWishlist,
   onIncrement,
   onDecrement,
+  onCancelOrder,
+  onRemoveFromCart,
   isInWishlist,
   cartQuantity = 0, // New prop for cart quantity
   addToRefs,
@@ -40,7 +42,31 @@ const ProductCard = ({
   const handleDecrement = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    onDecrement(product.id);
+    
+    // If cart quantity is 1, call handleRemoveFromCart to remove the item completely
+    if (cartQuantity === 1) {
+      handleRemoveFromCart(e);
+    } else {
+      onDecrement(product.id);
+    }
+  };
+
+  // Handle cancel order with explicit event prevention
+  const handleCancelOrder = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.confirm('Are you sure you want to cancel this order request?')) {
+      onCancelOrder(product);
+    }
+  };
+
+  // Handle remove from cart with explicit event prevention
+  const handleRemoveFromCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.confirm('Are you sure you want to remove this item from cart?')) {
+      onRemoveFromCart(product);
+    }
   };
 
   return (

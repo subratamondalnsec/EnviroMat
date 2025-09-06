@@ -2,7 +2,6 @@
 import React from 'react';
 import { FaHeart } from "react-icons/fa";
 import { Star, ShoppingCart, Heart, Plus, Minus, Coins } from 'lucide-react';
-
 const ProductCard = ({
   product,
   onAddToCart,
@@ -25,7 +24,9 @@ const ProductCard = ({
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    // console.log("Adding to cart:", product);
     onAddToCart(product);
+    console.log("Adding to cart:", product);
   };
 
   // Handle increment with explicit event prevention

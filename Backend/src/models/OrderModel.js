@@ -48,6 +48,18 @@ const orderSchema = new mongoose.Schema({
     },
   ],
   product: {
+    title:{
+      type:String,
+      required:true,
+      minlength: 5,
+      maxlength: 20
+    },
+    description:{
+      type:String,
+      required:true,
+      minlength: 25,
+      maxlength: 50
+    },
     quantity: {
       type: Number,
       required: true,
@@ -76,7 +88,6 @@ const orderSchema = new mongoose.Schema({
     },
     totalSold:{
       type: Number,
-      required: true,
       default:0
     }
   },

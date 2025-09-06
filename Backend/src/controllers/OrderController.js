@@ -21,6 +21,18 @@ exports.createOrder = async (req, res) => {
   try {
     const { sellerId, product, image, address } = req.body;
 
+    if (!product || !product.title || !product.description) {
+      return res.status(400).json({ message: "Product title and description are required" });
+    }
+
+    if (product.title.length < 5 || product.title.length > 20) {
+      return res.status(400).json({ message: "Product title must be between 5 and 20 characters" });
+    }
+
+    if (product.description.length < 20 || product.description.length > 50) {
+      return res.status(400).json({ message: "Product description must be between 20 and 50 characters" });
+    }
+
     const newOrder = new Order({
       sellerId,
       product,

@@ -12,7 +12,7 @@ import Checkout from './Checkout';
 import Footer from '../components/common/Footer';
 import ThemeToggle from '../components/common/NavbarComponents/ThemeToggle.jsx';
 import { ITEM_CATEGORIES } from '../utils/constants';
-import { getAllItems, addToCard, cancelRequestOfOrder, cancelFromAddToCard, getAllAddToCardsByUser } from '../services/operations/orderAPI';
+import { getAllItems, addToCard, getAllAddToCardsByUser } from '../services/operations/orderAPI';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -55,13 +55,12 @@ const Shop = () => {
   // Enhanced Theme-based styles
   const themeStyles = {
     background: isDarkMode ? 'bg-[#030404]' : 'bg-[#F9FAFB]',
-    text: isDarkMode ? 'text-white' : 'text-gray-900',
+    text: isDarkMode ? 'text-white hover:text-gray-600' : 'text-gray-900',
     secondaryText: isDarkMode ? 'text-gray-300' : 'text-gray-600',
     cardBg: isDarkMode ? 'bg-gray-800' : 'bg-white',
     borderColor: isDarkMode ? 'border-gray-600' : 'border-gray-300',
     inputBg: isDarkMode ? 'bg-gray-700' : 'bg-white',
     buttonBg: isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:bg-gray-50',
-    // Enhanced styles for better dark mode support:
     loadingBg: isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-100 text-green-800',
     errorBg: isDarkMode ? 'bg-yellow-800 text-yellow-300' : 'bg-yellow-100 text-yellow-800',
     cartNotificationBg: isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-100 text-green-800',
@@ -343,7 +342,6 @@ const Shop = () => {
     setSelectedCategory('All');
   };
 
-  const handleCheckout = async(e) => {
   const handleCheckout = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -718,6 +716,5 @@ const Shop = () => {
   );
 };
 
-}
 
 export default Shop;

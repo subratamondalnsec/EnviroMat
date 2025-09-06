@@ -315,6 +315,11 @@ const Shop = () => {
                   </div>
                 )}
               </div>
+              <div>
+                <button>
+                  Add Item 
+                </button>
+              </div>
 
               {/* Search and Filter Section */}
               <div className="mb-12">

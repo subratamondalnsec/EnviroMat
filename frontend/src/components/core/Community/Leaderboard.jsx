@@ -1,10 +1,27 @@
 // components/core/Community/Leaderboard.jsx
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { useSelector } from 'react-redux';
 import { Trophy, Crown, Award, Medal, User } from 'lucide-react';
 
 const Leaderboard = ({ blogs }) => {
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
   const [topUsers, setTopUsers] = useState([]);
+
+  // Theme-based styles
+  const themeStyles = {
+    container: isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200',
+    heading: isDarkMode ? 'text-white' : 'text-gray-900',
+    noDataText: isDarkMode ? 'text-gray-400' : 'text-gray-500',
+    userCard: isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50',
+    topUserCard: isDarkMode ? 'bg-gradient-to-r from-purple-900/20 to-green-900/20 border-purple-700' : 'bg-gradient-to-r from-purple-50 to-green-50 border-purple-100',
+    userName: isDarkMode ? 'text-white' : 'text-gray-900',
+    userStats: isDarkMode ? 'text-gray-400' : 'text-gray-500',
+    footerText: isDarkMode ? 'text-gray-400' : 'text-gray-500',
+    borderColor: isDarkMode ? 'border-gray-700' : 'border-gray-100'
+  };
 
   useEffect(() => {
     if (blogs && blogs.length > 0) {
@@ -68,30 +85,30 @@ const Leaderboard = ({ blogs }) => {
       case 3:
         return 'bg-gradient-to-r from-amber-400 to-amber-500 text-white';
       default:
-        return 'bg-gray-100 text-gray-600';
+        return isDarkMode ? 'bg-gray-600 text-gray-300' : 'bg-gray-100 text-gray-600';
     }
   };
 
   if (topUsers.length === 0) {
     return (
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 h-fit sticky top-6">
+      <div className={`${themeStyles.container} rounded-2xl p-6 shadow-sm border h-fit sticky top-6 transition-colors duration-300`}>
         <div className="flex items-center gap-3 mb-6">
           <Trophy className="w-6 h-6 text-purple-500" />
-          <h2 className="text-xl font-bold text-gray-900">Leaderboard</h2>
+          <h2 className={`text-xl font-bold ${themeStyles.heading} transition-colors duration-300`}>Leaderboard</h2>
         </div>
         <div className="text-center py-8">
           <div className="text-4xl mb-3">🏆</div>
-          <p className="text-gray-500">No data available</p>
+          <p className={`${themeStyles.noDataText} transition-colors duration-300`}>No data available</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 h-fit sticky top-6">
+    <div className={`${themeStyles.container} rounded-2xl p-6 shadow-sm border h-fit sticky top-6 transition-colors duration-300`}>
       <div className="flex items-center gap-3 mb-6">
         <Trophy className="w-6 h-6 text-purple-500" />
-        <h2 className="text-xl font-bold text-gray-900">Leaderboard</h2>
+        <h2 className={`text-xl font-bold ${themeStyles.heading} transition-colors duration-300`}>Leaderboard</h2>
       </div>
 
       <div className="space-y-4">
@@ -103,8 +120,8 @@ const Leaderboard = ({ blogs }) => {
             transition={{ duration: 0.3, delay: index * 0.1 }}
             className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
               user.rank <= 3 
-                ? 'bg-gradient-to-r from-purple-50 to-green-50 border border-purple-100' 
-                : 'hover:bg-gray-50'
+                ? `${themeStyles.topUserCard} border` 
+                : themeStyles.userCard
             }`}
           >
             {/* Rank Badge */}
@@ -134,10 +151,10 @@ const Leaderboard = ({ blogs }) => {
 
             {/* User Info */}
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 truncate text-sm">
+              <p className={`font-semibold ${themeStyles.userName} truncate text-sm transition-colors duration-300`}>
                 {user.name}
               </p>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
+              <div className={`flex items-center gap-2 text-xs ${themeStyles.userStats} transition-colors duration-300`}>
                 <span>💝 {user.totalLikes} likes</span>
                 <span>•</span>
                 <span>📝 {user.posts} posts</span>
@@ -146,7 +163,7 @@ const Leaderboard = ({ blogs }) => {
 
             {/* Credits Badge */}
             {user.credits > 0 && (
-              <div className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
+              <div className={`${isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-100 text-green-800'} px-2 py-1 rounded-full text-xs font-semibold transition-colors duration-300`}>
                 +{user.credits}
               </div>
             )}
@@ -155,8 +172,8 @@ const Leaderboard = ({ blogs }) => {
       </div>
 
       {/* Footer */}
-      <div className="mt-6 pt-4 border-t border-gray-100 text-center">
-        <p className="text-xs text-gray-500">
+      <div className={`mt-6 pt-4 border-t ${themeStyles.borderColor} text-center transition-colors duration-300`}>
+        <p className={`text-xs ${themeStyles.footerText} transition-colors duration-300`}>
           Rankings based on total likes received
         </p>
       </div>

@@ -7,11 +7,31 @@ import { BLOG_CATEGORIES } from '../../../utils/constants';
 import { setBlogs, setLoading } from '../../../slices/communitySlice';
 
 const BlogFilters = ({ onFilterChange }) => {
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
   const [activeFilter, setActiveFilter] = useState('all');
   const [showDropdown, setShowDropdown] = useState(false);
   const [mostLikedBlogs, setMostLikedBlogs] = useState([]);
 
   const dispatch = useDispatch();
+
+  // Theme-based styles
+  const themeStyles = {
+    allBtn: activeFilter === 'all'
+      ? (isDarkMode ? 'bg-purple-600 text-white border-purple-500 shadow-lg' : 'bg-purple-500 text-white border-purple-400 shadow-lg')
+      : (isDarkMode ? 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-purple-800 hover:text-white hover:border-purple-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-purple-100 hover:text-purple-800 hover:border-purple-400'),
+    likedBtn: activeFilter === 'most-liked'
+      ? (isDarkMode ? 'bg-red-600 text-white shadow-lg' : 'bg-red-400 text-white hover:text-gray-600 shadow-lg')
+      : (isDarkMode ? 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-red-800 hover:border-red-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-red-100 hover:border-red-300'),
+    categoryBtn: BLOG_CATEGORIES.includes(activeFilter)
+      ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-blue-500 text-white shadow-lg')
+      : (isDarkMode ? 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-blue-800 hover:text-white hover:border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-100 hover:text-blue-800 hover:border-blue-400'),
+    dropdown: isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200',
+    dropdownItem: isDarkMode ? 'hover:bg-gray-600 text-gray-300' : 'hover:bg-gray-50 text-gray-900',
+    activeFilterBadge: isDarkMode ? 'bg-blue-800 text-blue-300' : 'bg-blue-100 text-blue-800',
+    activeFilterClose: isDarkMode ? 'hover:text-blue-400' : 'hover:text-blue-600'
+  };
 
   useEffect(() => {
     // Load most liked blogs stats on component mount
@@ -74,12 +94,7 @@ const BlogFilters = ({ onFilterChange }) => {
       {/* All Posts Button */}
       <button
         onClick={() => handleFilterChange('all')}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all duration-300 hover:bg-purple-100 hover:text-purple-800 hover:border-purple-400 ${
-
-          activeFilter === 'all'
-            ? 'bg-purple-500 text-white border border-purple-400 shadow-lg'
-            : 'bg-white text-gray-700 border border-gray-300'
-        }`}
+        className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all duration-300 border ${themeStyles.allBtn}`}
       >
         <Filter className="w-4 h-4" />
         All Posts
@@ -88,11 +103,7 @@ const BlogFilters = ({ onFilterChange }) => {
       {/* Most Liked Posts Button */}
       <button
         onClick={() => handleFilterChange('most-liked')}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all duration-300 text-gray-700 border border-gray-300 hover:bg-red-100 hover:border-red-300 ${
-          activeFilter === 'most-liked'
-            ? 'bg-red-400 text-white hover:text-gray-600 shadow-lg'
-            : 'bg-white '
-        }`}
+        className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all duration-300 border ${themeStyles.likedBtn}`}
       >
         <TrendingUp className="w-4 h-4" />
         Most Liked ({mostLikedBlogs.length})
@@ -102,11 +113,7 @@ const BlogFilters = ({ onFilterChange }) => {
       <div className="relative">
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all duration-300 hover:bg-blue-100 hover:text-blue-800 hover:border-blue-400 ${
-            BLOG_CATEGORIES.includes(activeFilter)
-              ? 'bg-blue-500 text-white shadow-lg'
-              : 'bg-white text-gray-700 border border-gray-300'
-          }`}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all duration-300 border ${themeStyles.categoryBtn}`}
         >
           <Tag className="w-4 h-4" />
           By Category
@@ -117,13 +124,13 @@ const BlogFilters = ({ onFilterChange }) => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg z-10 max-h-64 overflow-y-auto"
+            className={`absolute top-full left-0 mt-2 w-64 ${themeStyles.dropdown} border rounded-xl shadow-lg z-10 max-h-64 overflow-y-auto transition-colors duration-300`}
           >
             {BLOG_CATEGORIES.map((category) => (
               <button
                 key={category}
                 onClick={() => handleFilterChange('category', category)}
-                className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors duration-200 first:rounded-t-xl last:rounded-b-xl"
+                className={`w-full text-left px-4 py-3 ${themeStyles.dropdownItem} transition-colors duration-200 first:rounded-t-xl last:rounded-b-xl`}
               >
                 {category}
               </button>
@@ -137,7 +144,7 @@ const BlogFilters = ({ onFilterChange }) => {
         <motion.div
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+          className={`flex items-center gap-2 px-3 py-1 ${themeStyles.activeFilterBadge} rounded-full text-sm transition-colors duration-300`}
         >
           <span>
             {activeFilter === 'most-liked' 
@@ -148,7 +155,7 @@ const BlogFilters = ({ onFilterChange }) => {
           </span>
           <button
             onClick={() => handleFilterChange('all')}
-            className="ml-1 hover:text-blue-600"
+            className={`ml-1 ${themeStyles.activeFilterClose} transition-colors duration-300`}
           >
             ×
           </button>

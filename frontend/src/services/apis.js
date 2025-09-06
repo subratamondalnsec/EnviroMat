@@ -46,6 +46,18 @@ export const blogEndpoints = {
   GET_BLOG_STATS_API: BASE_URL + "/blogs/stats",
 };
 
+// ORDER ENDPOINTS
+export const orderEndpoints = {
+  GET_ALL_ITEMS_API: BASE_URL + "/order/all-items",
+  CREATE_ORDER_API: BASE_URL + "/order/create-order",
+  REQUEST_ORDER_API: BASE_URL + "/order/request-order",
+  ADD_TO_CARD_API: BASE_URL + "/order/add-to-card",
+  CANCEL_REQUEST_API: BASE_URL + "/order/cancel-request",
+  CANCEL_FROM_ADD_TO_CARD_API: BASE_URL + "/order/cancel-from-add-to-card",
+  GET_ALL_ORDERS_BY_USER_API: BASE_URL + "/order/user-orders",
+  GET_ALL_ADD_TO_CARDS_BY_USER_API: BASE_URL + "/order/user-add-to-cards",
+};
+
 export const orderEndPoints = {
   GET_ALL_ITEMS:BASE_URL+'/order/get-items',
   REQUEST_ORDER_API: BASE_URL + "/order/request-order",

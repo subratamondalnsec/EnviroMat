@@ -22,6 +22,8 @@ const PORT = process.env.PORT || 4000;
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
+  "https://enviromat.onrender.com", // Add your frontend deployment URL here when deployed
+  "https://your-frontend-domain.com" // Replace with actual frontend domain
 ]
 
 app.use(
@@ -51,6 +53,16 @@ app.use("/api/v1/picker", pickerRoutes);
 app.use("/api/v1/order",orderRoute);
 app.use("/api/v1/waste", wasteRoute);
 app.use("/api/v1/blogs", blogRoutes);
+
+// Health check endpoint
+app.get("/", (req, res) => {
+	return res.json({
+		success: true,
+		message: "EnviroMat API is running successfully!",
+		timestamp: new Date().toISOString()
+	});
+});
+
 
 
 // app.get("/", (req, res) => {

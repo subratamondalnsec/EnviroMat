@@ -54,18 +54,16 @@ const Shop = () => {
 
   // Enhanced Theme-based styles
   const themeStyles = {
-    background: isDarkMode ? 'bg-[#030404]' : 'bg-[#F9FAFB]',
-    text: isDarkMode ? 'text-white hover:text-gray-600' : 'text-gray-900',
-    secondaryText: isDarkMode ? 'text-gray-300' : 'text-gray-600',
-    cardBg: isDarkMode ? 'bg-gray-800' : 'bg-white',
-    borderColor: isDarkMode ? 'border-gray-600' : 'border-gray-300',
-    inputBg: isDarkMode ? 'bg-gray-700' : 'bg-white',
-    buttonBg: isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:bg-gray-50',
-    loadingBg: isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-100 text-green-800',
-    errorBg: isDarkMode ? 'bg-yellow-800 text-yellow-300' : 'bg-yellow-100 text-yellow-800',
-    cartNotificationBg: isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-100 text-green-800',
-    cartIconBg: isDarkMode ? 'bg-green-700' : 'bg-green-100'
-  };
+  background: isDarkMode ? 'bg-gray-900' : 'bg-[#F9FAFB]',
+  text: isDarkMode ? 'text-white hover:text-gray-600' : 'text-gray-900',
+  secondaryText: isDarkMode ? 'text-gray-300' : 'text-gray-600',
+  cardBg: isDarkMode ? 'bg-gray-800' : 'bg-white',
+  borderColor: isDarkMode ? 'border-gray-600' : 'border-gray-300',
+  inputBg: isDarkMode ? 'bg-gray-700' : 'bg-white',
+  buttonBg: isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:bg-gray-50',
+  // ... and more comprehensive styling
+};
+
 
   // Check scroll position and update arrow visibility
   const checkScrollPosition = () => {

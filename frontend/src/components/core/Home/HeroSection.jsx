@@ -22,7 +22,7 @@ const HeroSection = () => {
 
   // Theme-based styles
   const themeStyles = {
-    background: isDarkMode ? 'bg-[#030404]' : 'bg-white',
+    background: isDarkMode ? 'bg-gray-900' : 'bg-white',
     text: isDarkMode ? 'text-white' : 'text-gray-900',
     secondaryText: isDarkMode ? 'text-gray-300' : 'text-gray-600',
     buttonPrimary: isDarkMode ? 'bg-green-600 hover:bg-green-700 text-white border-1 border-green-400' : 'bg-white border-2 border-gray-300 text-gray-700 hover:border-green-400',

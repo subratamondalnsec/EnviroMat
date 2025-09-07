@@ -22,7 +22,7 @@ const ProductCard = ({
 
   // Theme-based styles
   const themeStyles = {
-    cardBg: isDarkMode ? 'bg-gray-800/60' : 'bg-white/50',
+    cardBg: isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-white/50',
     border: isDarkMode ? 'border-gray-600' : 'border-gray-400',
     textPrimary: isDarkMode ? 'text-white' : 'text-gray-900',
     textSecondary: isDarkMode ? 'text-gray-300' : 'text-gray-600',

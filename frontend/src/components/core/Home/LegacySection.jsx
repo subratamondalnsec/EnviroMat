@@ -20,7 +20,7 @@ const LegacySection = () => {
 
   // Theme-based styles
   const themeStyles = {
-    background: isDarkMode ? 'bg-[#030404]' : 'bg-[#F9FAFB]',
+    background: isDarkMode ? 'bg-gray-900' : 'bg-[#F9FAFB]',
     text: isDarkMode ? 'text-white' : 'text-gray-900',
     secondaryText: isDarkMode ? 'text-gray-300' : 'text-gray-800',
     centerCardBg: isDarkMode ? 'bg-gray-800/80' : 'bg-gray-200/80',

@@ -14,7 +14,7 @@ const TestimonialSection = () => {
 
   // Theme-based styles
   const themeStyles = {
-    background: isDarkMode ? 'bg-[#030404]' : 'bg-[#F9FAFB]',
+    background: isDarkMode ? 'bg-gray-900' : 'bg-[#F9FAFB]',
     cardBg: isDarkMode ? 'bg-gray-800' : 'bg-[#F3F4F6]',
     cardBorder: isDarkMode ? 'border-gray-600' : 'border-gray-300',
     text: isDarkMode ? 'text-white' : 'text-gray-900',

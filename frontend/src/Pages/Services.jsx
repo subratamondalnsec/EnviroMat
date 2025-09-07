@@ -195,13 +195,22 @@ const ServicePage = () => {
   const getCurrentLocation = () => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
+        console.warn('Geolocation not supported, using fallback coordinates');
         // Fallback coordinates if geolocation is not available
+        resolve({ lat: 22.5726, lng: 88.3639 }); // Kolkata default
+        return;
+      }
+
+      // Check if the page is served over HTTPS (required for geolocation in modern browsers)
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+        console.warn('Geolocation requires HTTPS, using fallback coordinates');
         resolve({ lat: 22.5726, lng: 88.3639 }); // Kolkata default
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          console.log('Got user coordinates for waste upload:', position.coords.latitude, position.coords.longitude);
           resolve({
             lat: position.coords.latitude,
             lng: position.coords.longitude,
@@ -209,8 +218,26 @@ const ServicePage = () => {
         },
         (error) => {
           console.warn("Geolocation error:", error);
+          let errorMessage = 'Unable to get location';
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = 'Location access denied';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = 'Location unavailable';
+              break;
+            case error.TIMEOUT:
+              errorMessage = 'Location request timeout';
+              break;
+          }
+          console.warn(errorMessage + ', using fallback coordinates');
           // Fallback coordinates
           resolve({ lat: 22.5726, lng: 88.3639 }); // Kolkata default
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes cache
         }
       );
     });

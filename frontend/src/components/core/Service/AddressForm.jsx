@@ -58,8 +58,16 @@ const AddressForm = ({ address: propAddress, onAddressChange }) => {
     setIsGettingLocation(true);
     setLocationError('');
 
+    // Check if geolocation is supported
     if (!navigator.geolocation) {
-      setLocationError('Geolocation is not supported by this browser');
+      setLocationError('Geolocation is not supported by this browser. Please enter your address manually.');
+      setIsGettingLocation(false);
+      return;
+    }
+
+    // Check if the page is served over HTTPS (required for geolocation in modern browsers)
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+      setLocationError('Geolocation requires HTTPS. Please enter your address manually.');
       setIsGettingLocation(false);
       return;
     }
@@ -68,46 +76,100 @@ const AddressForm = ({ address: propAddress, onAddressChange }) => {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
+          console.log('Got coordinates:', latitude, longitude);
           
-          // Simulate reverse geocoding API call
-          const mockAddress = {
-            street: '123 Green Street',
-            city: 'Kolkata',
-            state: 'West Bengal',
-            pincode: '700001',
-            landmark: 'Near City Center'
-          };
+          // Try to get address from coordinates using reverse geocoding
+          const addressData = await reverseGeocode(latitude, longitude);
           
-          setAddress(mockAddress);
-          onAddressChange(mockAddress);
+          if (addressData) {
+            setAddress(addressData);
+            onAddressChange(addressData);
+          } else {
+            // Fallback: Just update coordinates but ask user to fill address
+            setLocationError('Location detected but could not get address details. Please fill in the address manually.');
+          }
+          
           setIsGettingLocation(false);
         } catch (error) {
-          setLocationError('Failed to fetch address from coordinates');
+          console.error('Error in getCurrentLocation:', error);
+          setLocationError('Failed to fetch address from coordinates. Please enter manually.');
           setIsGettingLocation(false);
         }
       },
       (error) => {
+        console.error('Geolocation error:', error);
         let errorMessage = 'Unable to retrieve your location';
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = 'Location access denied by user';
+            errorMessage = 'Location access denied. Please enable location permissions in your browser settings and try again.';
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Location information is unavailable';
+            errorMessage = 'Location information is unavailable. Please check your device settings and try again.';
             break;
           case error.TIMEOUT:
-            errorMessage = 'Location request timed out';
+            errorMessage = 'Location request timed out. Please try again or enter address manually.';
             break;
+          default:
+            errorMessage = 'An unknown error occurred while getting your location. Please enter address manually.';
         }
         setLocationError(errorMessage);
         setIsGettingLocation(false);
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000
+        timeout: 15000, // Increased timeout
+        maximumAge: 300000 // 5 minutes cache
       }
     );
+  };
+
+  // Reverse geocoding function using OpenStreetMap Nominatim API (free)
+  const reverseGeocode = async (latitude, longitude) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=16&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'EnviroMat-App'
+          }
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error('Geocoding service unavailable');
+      }
+      
+      const data = await response.json();
+      console.log('Geocoding response:', data);
+      
+      if (data && data.address) {
+        const addr = data.address;
+        
+        // Extract address components
+        const street = [
+          addr.house_number,
+          addr.road || addr.street
+        ].filter(Boolean).join(' ') || '';
+        
+        const city = addr.city || addr.town || addr.village || addr.suburb || '';
+        const state = addr.state || addr.region || '';
+        const pincode = addr.postcode || '';
+        const landmark = addr.commercial || addr.amenity || '';
+        
+        return {
+          street: street,
+          city: city,
+          state: state,
+          pincode: pincode,
+          landmark: landmark
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Reverse geocoding error:', error);
+      return null;
+    }
   };
 
   return (
@@ -138,8 +200,18 @@ const AddressForm = ({ address: propAddress, onAddressChange }) => {
       </div>
 
       {locationError && (
-        <div className={`mb-4 p-3 ${themeStyles.errorBg} border rounded-lg text-sm transition-colors duration-300`}>
-          {locationError}
+        <div className={`mb-4 p-4 ${themeStyles.errorBg} border rounded-lg transition-colors duration-300`}>
+          <div className="flex items-start space-x-2">
+            <span className="text-red-500 mt-0.5">⚠️</span>
+            <div>
+              <p className="text-sm font-medium">{locationError}</p>
+              {locationError.includes('permission') && (
+                <p className="text-xs mt-1 opacity-80">
+                  Tip: Click the location icon in your browser's address bar to enable location permissions.
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       )}
 

@@ -15,10 +15,18 @@ import CreditSpendingTimeline from '../components/core/UserProfile/CreditSpendin
 const UserProfile = () => {
   const pageRef = useRef(null);
   const dispatch = useDispatch();
+  
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
   const { user } = useSelector((state) => state.profile);
   
   const [showCreditHistory, setShowCreditHistory] = useState(false);
-  // Remove blogs tab - only overview now
+
+  // Theme-based styles
+  const themeStyles = {
+    background: isDarkMode ? 'bg-gray-900' : 'bg-[#F9FAFB]',
+    contentCard: isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'
+  };
 
   // TODO: Replace with real API data - Sample user data
   const [userData] = useState({
@@ -105,10 +113,8 @@ const UserProfile = () => {
     setShowCreditHistory(false);
   };
 
-  // Remove tabs since we only have overview now
-
   return (
-    <div ref={pageRef} className="min-h-screen bg-[#F9FAFB] py-8">
+    <div ref={pageRef} className={`min-h-screen ${themeStyles.background} py-8 transition-colors duration-300`}>
       {/* Background Animation */}
       <motion.div 
         className="absolute inset-0 opacity-5"
@@ -134,8 +140,8 @@ const UserProfile = () => {
           onViewHistory={handleViewHistory}
         />
         
-        {/* Main Content - Remove tabs since only overview */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
+        {/* Main Content */}
+        <div className={`${themeStyles.contentCard} rounded-lg shadow-sm border mb-8 transition-colors duration-300`}>
           <div className="p-6">
             <div className="space-y-8">
               {/* Quick Stats */}

@@ -11,6 +11,7 @@ import {
   Legend,
 } from 'chart.js';
 import { CreditCard, TrendingDown } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import gsap from 'gsap';
 
 ChartJS.register(
@@ -23,7 +24,16 @@ ChartJS.register(
 );
 
 const SpendingHistory = ({ spendingData }) => {
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
   const sectionRef = useRef(null);
+
+  // Theme-based styles
+  const themeStyles = {
+    cardBg: isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-400',
+    heading: isDarkMode ? 'text-white' : 'text-gray-900'
+  };
 
   useEffect(() => {
     if (!sectionRef.current) return;
@@ -71,7 +81,8 @@ const SpendingHistory = ({ spendingData }) => {
           font: {
             size: 12,
             weight: 'bold'
-          }
+          },
+          color: isDarkMode ? '#ffffff' : '#000000'
         }
       },
       tooltip: {
@@ -85,23 +96,26 @@ const SpendingHistory = ({ spendingData }) => {
     scales: {
       x: {
         grid: {
-          display: false
-        },
-        ticks: {
-          font: {
-            weight: 'bold'
-          }
-        }
-      },
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)'
+          display: false,
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
         },
         ticks: {
           font: {
             weight: 'bold'
           },
+          color: isDarkMode ? '#ffffff' : '#000000'
+        }
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+        },
+        ticks: {
+          font: {
+            weight: 'bold'
+          },
+          color: isDarkMode ? '#ffffff' : '#000000',
           callback: function(value) {
             return '₹' + value;
           }
@@ -115,10 +129,9 @@ const SpendingHistory = ({ spendingData }) => {
   const netBalance = totalEarned - totalSpent;
 
   return (
-    <div ref={sectionRef} className="bg-white rounded-3xl p-6 border border-gray-400">
-
+    <div ref={sectionRef} className={`${themeStyles.cardBg} rounded-3xl p-6 border transition-colors duration-300`}>
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-gray-900 flex items-center">
+        <h3 className={`text-xl font-bold ${themeStyles.heading} flex items-center transition-colors duration-300`}>
           <CreditCard className="w-6 h-6 mr-2 text-purple-500" />
           Credit History
         </h3>

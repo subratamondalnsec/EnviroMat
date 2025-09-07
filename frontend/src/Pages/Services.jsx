@@ -20,6 +20,9 @@ const ServicePage = () => {
   const pageRef = useRef(null);
   const summaryRef = useRef(null);
 
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
   // Initial state values for proper reset
   const initialAddress = {
     street: '',
@@ -47,6 +50,13 @@ const ServicePage = () => {
 
   // Get user token for API calls
   const { token } = useSelector((state) => state.auth);
+
+  // Theme styles
+  const themeStyles = {
+    background: isDarkMode ? 'bg-gray-900' : 'bg-[#F9FAFB]',
+    heading: isDarkMode ? 'text-white' : 'text-gray-900',
+    subtitle: isDarkMode ? 'text-gray-300' : 'text-gray-600'
+  };
 
   useEffect(() => {
     // Scroll to top when component mounts
@@ -227,7 +237,7 @@ const ServicePage = () => {
 
   return (
     <>
-      <div ref={pageRef} className="min-h-screen bg-[#F9FAFB] py-8">
+      <div ref={pageRef} className={`min-h-screen ${themeStyles.background} py-8 transition-colors duration-300`}>
         {/* Background Animation */}
         <motion.div 
           className="absolute inset-0 opacity-5"
@@ -250,7 +260,7 @@ const ServicePage = () => {
           {/* Page Header */}
           <div className="text-center mt-24 mb-10">
             <motion.h1 
-              className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6"
+              className={`text-4xl lg:text-5xl font-bold leading-tight mb-6 ${themeStyles.heading} transition-colors duration-300`}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
@@ -258,7 +268,7 @@ const ServicePage = () => {
               Sell Your <span className="text-green-400">Waste</span> & Earn <span className="text-purple-400">Credits</span>
             </motion.h1>
             <motion.p 
-              className="text-xl text-gray-600 max-w-3xl mx-auto"
+              className={`text-xl max-w-3xl mx-auto ${themeStyles.subtitle} transition-colors duration-300`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}

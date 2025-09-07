@@ -2,14 +2,28 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Home, Sun, Recycle, TreePine, Package } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const OurServices = () => {
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
   const sectionRef = useRef(null);
   const cardsRef = useRef([]);
+
+  // Theme-based styles
+  const themeStyles = {
+    background: isDarkMode ? 'bg-gray-900' : 'bg-[#F9FAFB]',
+    heading: isDarkMode ? 'text-white' : 'text-gray-900',
+    subtitle: isDarkMode ? 'text-gray-300' : 'text-gray-600',
+    cardBg: isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200',
+    cardTitle: isDarkMode ? 'text-white' : 'text-gray-900',
+    cardText: isDarkMode ? 'text-gray-300' : 'text-gray-600'
+  };
 
   useEffect(() => {
     if (!sectionRef.current) return;
@@ -69,7 +83,7 @@ const OurServices = () => {
   ];
 
   return (
-    <section ref={sectionRef} className="py-20 bg-[#F9FAFB]">
+    <section ref={sectionRef} className={`py-20 ${themeStyles.background} transition-colors duration-300`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
           className="text-center mb-16"
@@ -78,10 +92,10 @@ const OurServices = () => {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+          <h2 className={`text-4xl lg:text-5xl font-bold ${themeStyles.heading} mb-6 transition-colors duration-300`}>
             Our <span className="text-green-400">Services</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className={`text-xl ${themeStyles.subtitle} max-w-3xl mx-auto transition-colors duration-300`}>
             Comprehensive sustainable solutions for all your eco-friendly needs
           </p>
         </motion.div>
@@ -91,14 +105,14 @@ const OurServices = () => {
             <motion.div
               key={index}
               ref={el => cardsRef.current[index] = el}
-              className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
+              className={`${themeStyles.cardBg} rounded-3xl p-8 shadow-sm border hover:shadow-md transition-all duration-300`}
               whileHover={{ y: -2 }}
             >
               <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${service.color} text-white mb-6`}>
                 {service.icon}
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">{service.title}</h3>
-              <p className="text-gray-600 leading-relaxed">{service.description}</p>
+              <h3 className={`text-xl font-bold ${themeStyles.cardTitle} mb-4 transition-colors duration-300`}>{service.title}</h3>
+              <p className={`${themeStyles.cardText} leading-relaxed transition-colors duration-300`}>{service.description}</p>
             </motion.div>
           ))}
         </div>

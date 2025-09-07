@@ -1,6 +1,6 @@
 // components/Shop.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, ShoppingCart, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import gsap from 'gsap';
@@ -10,13 +10,15 @@ import AddProductForm from '../components/core/Shop/AddProductForm';
 import products from '../components/core/Shop/Data.jsx';
 import Checkout from './Checkout';
 import Footer from '../components/common/Footer';
+import ThemeToggle from '../components/common/NavbarComponents/ThemeToggle.jsx';
 import { ITEM_CATEGORIES } from '../utils/constants';
-import { getAllItems, addToCard, cancelRequestOfOrder, cancelFromAddToCard, getAllAddToCardsByUser } from '../services/operations/orderAPI';
+import { getAllItems, addToCard, getAllAddToCardsByUser } from '../services/operations/orderAPI';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Shop = () => {
-  // Get user data from Redux store
+  // Get theme and user data from Redux store
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
   const { user } = useSelector((state) => state.profile);
   const { token } = useSelector((state) => state.auth);
   
@@ -29,7 +31,7 @@ const Shop = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // New state for horizontal scrolling
+  // Horizontal scrolling states
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const scrollContainerRef = useRef(null);
@@ -50,6 +52,19 @@ const Shop = () => {
 
   const categories = ['All', ...ITEM_CATEGORIES];
 
+  // Enhanced Theme-based styles
+  const themeStyles = {
+  background: isDarkMode ? 'bg-gray-900' : 'bg-[#F9FAFB]',
+  text: isDarkMode ? 'text-white hover:text-gray-600' : 'text-gray-900',
+  secondaryText: isDarkMode ? 'text-gray-300' : 'text-gray-600',
+  cardBg: isDarkMode ? 'bg-gray-800' : 'bg-white',
+  borderColor: isDarkMode ? 'border-gray-600' : 'border-gray-300',
+  inputBg: isDarkMode ? 'bg-gray-700' : 'bg-white',
+  buttonBg: isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:bg-gray-50',
+  // ... and more comprehensive styling
+};
+
+
   // Check scroll position and update arrow visibility
   const checkScrollPosition = () => {
     if (scrollContainerRef.current) {
@@ -59,35 +74,20 @@ const Shop = () => {
     }
   };
 
-  // Scroll left function
+  // Scroll functions
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({
-        left: -200,
-        behavior: 'smooth'
-      });
+      scrollContainerRef.current.scrollBy({ left: -200, behavior: 'smooth' });
     }
   };
 
-  // Scroll right function
   const scrollRight = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({
-        left: 200,
-        behavior: 'smooth'
-      });
+      scrollContainerRef.current.scrollBy({ left: 200, behavior: 'smooth' });
     }
   };
 
-  // Check arrow visibility on mount and resize
-  useEffect(() => {
-    checkScrollPosition();
-    const handleResize = () => checkScrollPosition();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [categories]);
-
-  // Function to fetch items from API
+  // Fetch items from API
   const fetchItemsFromAPI = async () => {
     try {
       setLoading(true);
@@ -95,7 +95,6 @@ const Shop = () => {
       const apiItems = await getAllItems();
       
       if (apiItems && Array.isArray(apiItems)) {
-        // Transform API response to match frontend product structure
         const transformedItems = apiItems.map(item => ({
           id: item._id || item.id || Date.now() + Math.random(),
           name: item.product?.title || item.title || 'Unknown Product',
@@ -110,13 +109,11 @@ const Shop = () => {
           discount: 0
         }));
         
-        // Combine API items with static products
         setProductList([...transformedItems, ...products]);
       }
     } catch (error) {
       console.error('Error fetching items from API:', error);
       setError('Failed to load some items from server');
-      // Still show static products even if API fails
       setProductList(products);
     } finally {
       setLoading(false);
@@ -170,7 +167,6 @@ const Shop = () => {
       console.error('Error loading state from localStorage:', error);
     }
     
-    // Fetch items from API on component mount
     fetchItemsFromAPI();
     
     // Don't sync cart automatically on mount
@@ -208,22 +204,18 @@ const Shop = () => {
     }
   }, [wishlist]);
 
-  // Filter products based on category and search
+  // Filter products
   const filteredProducts = productList.filter(product => {
     const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
-    
-    // Handle both static products (with 'name') and API products (with 'title')
     const productName = product.name || product.product?.title || product.title || '';
     const productDescription = product.description || product.product?.description || '';
-    
     const matchesSearch = productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          productDescription.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
-  // Handle new product submission from the form
+  // Event handlers
   const handleAddProduct = (newProduct) => {
-    // Transform API response to match frontend product structure
     const transformedProduct = {
       id: newProduct.order?._id || newProduct._id || Date.now(),
       name: newProduct.order?.product?.title || newProduct.product?.title || newProduct.title,
@@ -242,24 +234,9 @@ const Shop = () => {
     setShowAddForm(false);
   };
 
-  // Handle showing add form
-  const handleShowAddForm = () => {
-    setShowAddForm(true);
-  };
-
-  // Handle closing add form
-  const handleCloseAddForm = () => {
-    setShowAddForm(false);
-  };
-
-  // Existing functions...
   const addToCart = async (product) => {
     console.log('Attempting to add to cart:', product);
     try {
-      // If user is logged in, add to cart via API
-      console.log('User:', user);
-      console.log('Token:', token);
-      console.log('Product ID:', product.id);
       if (user && token && product.id) {
         console.log('User is logged in, adding to cart via API');
         const data = {
@@ -272,7 +249,6 @@ const Shop = () => {
         console.log(`Item added to cart in backend: ${product.name || product.title}`);
       }
 
-      // Update local cart state
       setCartItems(prev => {
         const existing = prev.find(item => item.id === product.id || item.id === product._id);
         if (existing) {
@@ -283,7 +259,6 @@ const Shop = () => {
           );
         }
         
-        // Create a normalized product object for local cart
         const cartItem = {
           id: product.id || product._id,
           name: product.name || product.title,
@@ -300,7 +275,6 @@ const Shop = () => {
       });
     } catch (error) {
       console.error('Error adding to cart:', error);
-      // Still add to local cart even if API fails
       setCartItems(prev => {
         const existing = prev.find(item => item.id === product.id || item.id === product._id);
         if (existing) {
@@ -340,49 +314,6 @@ const Shop = () => {
     });
   };
 
-  // Function to cancel order request
-  const cancelOrderRequest = async (product) => {
-    try {
-      if (user && token && product.id) {
-        const data = {
-          buyerId: user._id,
-          orderId: product.id
-        };
-        
-        await cancelRequestOfOrder(data);
-        console.log(`Order request cancelled for: ${product.name || product.title}`);
-        
-        // Optionally refresh the items list
-        fetchItemsFromAPI();
-      }
-    } catch (error) {
-      console.error('Error cancelling order request:', error);
-      alert('Failed to cancel order request. Please try again.');
-    }
-  };
-
-  // Function to remove item from cart
-  const removeFromCart = async (product) => {
-    try {
-      if (user && token && product.id) {
-        const data = {
-          buyerId: user._id,
-          orderId: product.id
-        };
-        
-        await cancelFromAddToCard(data);
-        console.log(`Item removed from cart in backend: ${product.name || product.title}`);
-      }
-
-      // Update local cart state
-      setCartItems(prev => prev.filter(item => item.id !== product.id && item.id !== product._id));
-    } catch (error) {
-      console.error('Error removing from cart:', error);
-      // Still remove from local cart even if API fails
-      setCartItems(prev => prev.filter(item => item.id !== product.id && item.id !== product._id));
-    }
-  };
-
   const getCartQuantity = (productId) => {
     const cartItem = cartItems.find(item => item.id === productId);
     return cartItem ? cartItem.quantity : 0;
@@ -417,6 +348,8 @@ const Shop = () => {
       alert('Your cart is empty. Please add some items before checkout.');
       return;
     }
+
+     await syncCartFromBackend();
     
     // Sync cart from backend before showing checkout
     await syncCartFromBackend();
@@ -521,7 +454,7 @@ const Shop = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="py-16 bg-[#F9FAFB] relative overflow-hidden"
+            className={`py-16 ${themeStyles.background} relative overflow-hidden transition-colors duration-300`}
           >
             {/* Background Animation */}
             <motion.div 
@@ -542,24 +475,25 @@ const Shop = () => {
             />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-              {/* Header Section */}
+              {/* Header Section with Theme Toggle */}
               <div ref={headerRef} className="text-center mt-16 mb-16">
-                <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
+                <h1 className={`text-5xl lg:text-6xl font-bold ${themeStyles.text} leading-tight mb-6 transition-colors duration-300`}>
                   Sustainable, <span className="text-purple-400">Eco-Friendly</span> <span className="text-green-400">& Recycled</span> <span>Materials</span> <span className="text-purple-400">Shop</span>
                 </h1>
-                <p className="text-gray-600 text-lg max-w-4xl mx-auto mb-8">
+                <p className={`${themeStyles.secondaryText} text-lg max-w-4xl mx-auto mb-8 transition-colors duration-300`}>
                   Discover our curated collection of eco-friendly materials and products designed for a sustainable future.
                 </p>
                 
+                {/* Enhanced Cart Notification */}
                 {cartItems.length > 0 && (
-                  <div className="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
+                  <div className={`inline-flex items-center space-x-2 ${themeStyles.cartNotificationBg} px-4 py-2 rounded-full text-sm font-medium transition-colors duration-300`}>
                     <ShoppingCart className="w-4 h-4" />
                     <span>Cart saved ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
                   </div>
                 )}
               </div>
 
-              {/* Add Item Button */}
+              {/* Action Buttons */}
               <div className="flex justify-end mb-8 gap-3">
                 <button
                   onClick={fetchItemsFromAPI}
@@ -572,7 +506,7 @@ const Shop = () => {
                   <span>Refresh</span>
                 </button>
                 <button
-                  onClick={handleShowAddForm}
+                  onClick={() => setShowAddForm(true)}
                   className="bg-[#cb8fff] border border-[#C27BFF] hover:bg-[#d2a4fa] text-gray-700 font-semibold flex items-center gap-2 rounded-full px-3 py-2 shadow-md transition-all duration-300 hover:scale-102"
                 >
                   <Plus className="w-5 h-5" />
@@ -580,18 +514,18 @@ const Shop = () => {
                 </button>
               </div>
 
-              {/* Search and Filter Section - Updated with Horizontal Scroll */}
+              {/* Search and Filter Section */}
               <div className="mb-12">
                 <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
                   {/* Search Bar */}
                   <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${isDarkMode ? 'text-gray-400' : 'text-gray-400'} w-5 h-5`} />
                     <input
                       type="text"
                       placeholder="Search sustainable products..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-full focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all duration-300"
+                      className={`w-full pl-10 pr-4 py-3 ${themeStyles.inputBg} border ${themeStyles.borderColor} rounded-full focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all duration-300 ${themeStyles.text}`}
                     />
                   </div>
 
@@ -602,10 +536,10 @@ const Shop = () => {
                       {showLeftArrow && (
                         <button
                           onClick={scrollLeft}
-                          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-300 rounded-full p-2 shadow-lg hover:bg-gray-50 transition-all duration-200"
+                          className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 ${themeStyles.cardBg} border ${themeStyles.borderColor} rounded-full p-2 shadow-lg ${themeStyles.buttonBg} transition-all duration-200`}
                           style={{ marginLeft: '-12px' }}
                         >
-                          <ChevronLeft className="w-4 h-4 text-gray-600" />
+                          <ChevronLeft className={`w-4 h-4 ${themeStyles.secondaryText}`} />
                         </button>
                       )}
 
@@ -628,7 +562,7 @@ const Shop = () => {
                             className={`px-6 py-2 rounded-full font-medium transition-all duration-300 whitespace-nowrap flex-shrink-0 ${
                               selectedCategory === category
                                 ? 'bg-[#5DE584] border border-[#08DF73] text-gray-700'
-                                : 'bg-white border border-gray-300 hover:border-[#08DF73] hover:bg-[#eff8d8] text-gray-700'
+                                : `${themeStyles.cardBg} border ${themeStyles.borderColor} hover:border-[#08DF73] hover:bg-[#eff8d8] ${themeStyles.text}`
                             }`}
                           >
                             {category}
@@ -640,10 +574,10 @@ const Shop = () => {
                       {showRightArrow && (
                         <button
                           onClick={scrollRight}
-                          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-300 rounded-full p-2 shadow-lg hover:bg-gray-50 transition-all duration-200"
+                          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 ${themeStyles.cardBg} border ${themeStyles.borderColor} rounded-full p-2 shadow-lg ${themeStyles.buttonBg} transition-all duration-200`}
                           style={{ marginRight: '-12px' }}
                         >
-                          <ChevronRight className="w-4 h-4 text-gray-600" />
+                          <ChevronRight className={`w-4 h-4 ${themeStyles.secondaryText}`} />
                         </button>
                       )}
                     </div>
@@ -651,20 +585,20 @@ const Shop = () => {
                 </div>
               </div>
 
-              {/* Loading State */}
+              {/* Enhanced Loading State */}
               {loading && (
                 <div className="text-center py-8">
-                  <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
+                  <div className={`inline-flex items-center px-4 py-2 ${themeStyles.loadingBg} rounded-full transition-colors duration-300`}>
+                    <div className={`animate-spin rounded-full h-4 w-4 border-b-2 ${isDarkMode ? 'border-green-300' : 'border-green-600'} mr-2`}></div>
                     Loading items from server...
                   </div>
                 </div>
               )}
 
-              {/* Error Message */}
+              {/* Enhanced Error State */}
               {error && (
                 <div className="text-center py-4">
-                  <div className="inline-flex items-center px-4 py-2 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+                  <div className={`inline-flex items-center px-4 py-2 ${themeStyles.errorBg} rounded-full text-sm transition-colors duration-300`}>
                     ⚠️ {error}
                   </div>
                 </div>
@@ -688,8 +622,6 @@ const Shop = () => {
                       onIncrement={incrementQuantity}
                       onDecrement={decrementQuantity}
                       onToggleWishlist={toggleWishlist}
-                      onCancelOrder={cancelOrderRequest}
-                      onRemoveFromCart={removeFromCart}
                       isInWishlist={wishlist.includes(product.id)}
                       cartQuantity={getCartQuantity(product.id)}
                       addToRefs={addToProductsRefs}
@@ -708,8 +640,8 @@ const Shop = () => {
                   transition={{ duration: 0.6 }}
                 >
                   <div className="text-6xl mb-4">🌱</div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">No Products Found</h3>
-                  <p className="text-gray-600 mb-6">Try adjusting your search or filter criteria</p>
+                  <h3 className={`text-2xl font-bold ${themeStyles.text} mb-2 transition-colors duration-300`}>No Products Found</h3>
+                  <p className={`${themeStyles.secondaryText} mb-6 transition-colors duration-300`}>Try adjusting your search or filter criteria</p>
                   <button
                     type="button"
                     onClick={handleClearFilters}
@@ -720,29 +652,29 @@ const Shop = () => {
                 </motion.div>
               )}
 
-              {/* Shopping Cart Summary */}
+              {/* Enhanced Shopping Cart Summary */}
               {cartItems.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="fixed bottom-6 right-6 bg-[#F7F7F7] rounded-2xl shadow-2xl p-6 border border-gray-200 z-40"
+                  className={`fixed bottom-6 right-6 ${themeStyles.cardBg} rounded-2xl shadow-2xl p-6 border ${themeStyles.borderColor} z-40 transition-colors duration-300`}
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="bg-green-100 rounded-full p-3">
-                      <ShoppingCart className="w-6 h-6 text-green-600" />
+                    <div className={`${themeStyles.cartIconBg} rounded-full p-3 transition-colors duration-300`}>
+                      <ShoppingCart className={`w-6 h-6 ${isDarkMode ? 'text-green-300' : 'text-green-600'} transition-colors duration-300`} />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">
+                      <p className={`font-semibold ${themeStyles.text} transition-colors duration-300`}>
                         {cartItems.reduce((sum, item) => sum + item.quantity, 0)} items in cart
                       </p>
-                      <p className="text-green-600 font-bold">
+                      <p className={`font-bold ${isDarkMode ? 'text-green-400' : 'text-green-600'} transition-colors duration-300`}>
                         ₹{cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}
                       </p>
                     </div>
                     <button 
                       type="button"
                       onClick={handleCheckout}
-                      className="bg-[#0ae979] border border-gray-300 hover:border-[#08DF73] hover:bg-[#eff8d8] text-gray-700 px-6 py-2 rounded-full font-semibold transition-colors duration-300"
+                      className={`${isDarkMode ? 'bg-green-600 hover:bg-green-700 text-white border-green-500' : 'bg-[#0ae979] border border-gray-300 hover:border-[#08DF73] hover:bg-[#eff8d8] text-gray-700'} px-6 py-2 rounded-full font-semibold transition-colors duration-300`}
                     >
                       Checkout
                     </button>
@@ -757,7 +689,7 @@ const Shop = () => {
       {/* Add Product Form Component */}
       <AddProductForm
         isOpen={showAddForm}
-        onClose={handleCloseAddForm}
+        onClose={() => setShowAddForm(false)}
         onSubmit={handleAddProduct}
         categories={categories.filter(cat => cat !== 'All')}
       />
@@ -777,5 +709,6 @@ const Shop = () => {
     </>
   );
 };
+
 
 export default Shop;

@@ -2,15 +2,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Camera } from 'lucide-react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import gsap from 'gsap';
 import { createBlog } from '../../../services/operations/communityApi';
 import { addBlog, setLoading } from '../../../slices/communitySlice';
 import { BLOG_CATEGORIES } from '../../../utils/constants';
 import toast, { Toaster } from "react-hot-toast";
 
-
 const CreatePostModal = ({ show, onClose, onCreate }) => {
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('Environment');
@@ -23,6 +25,20 @@ const CreatePostModal = ({ show, onClose, onCreate }) => {
 
   // Blog categories from backend schema
   const categories = BLOG_CATEGORIES;
+
+  // Theme-based styles
+  const themeStyles = {
+    overlay: 'bg-black/20 backdrop-blur-sm',
+    modal: isDarkMode ? 'bg-gray-800' : 'bg-[#f5f5f5]',
+    heading: isDarkMode ? 'text-white' : 'text-gray-900',
+    label: isDarkMode ? 'text-gray-300' : 'text-gray-700',
+    input: isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900',
+    textarea: isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900',
+    uploadArea: isDarkMode ? 'border-gray-600 hover:border-green-400' : 'border-gray-300 hover:border-green-600',
+    cancelBtn: isDarkMode ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300',
+    submitBtn: isDarkMode ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-600 text-white hover:bg-green-700',
+    closeBtn: isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
+  };
 
   useEffect(() => {
     if (show) {
@@ -99,35 +115,34 @@ const CreatePostModal = ({ show, onClose, onCreate }) => {
 
   return (
     <motion.div
-      className="createPost fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
+      className={`createPost fixed inset-0 z-50 flex items-center justify-center ${themeStyles.overlay}`}
       initial={{opacity: 0}}
       animate={{opacity: 1}}
       exit={{opacity:0}}
     >
       <motion.div
         ref={modalRef}
-        className="bg-[#f5f5f5] rounded-3xl p-8 max-w-xl w-full overflow-hidden relative mt-16"
-
+        className={`${themeStyles.modal} rounded-3xl p-8 max-w-xl w-full overflow-hidden relative mt-16 transition-colors duration-300`}
       >
         <button
           onClick={onClose}
           aria-label="Close modal"
-          className="absolute top-6 right-6 p-2 text-gray-700 hover:bg-gray-100 rounded-full"
+          className={`absolute top-6 right-6 p-2 ${themeStyles.closeBtn} rounded-full transition-colors duration-300`}
         >
           <X size={24} />
         </button>
 
-        <h2 className="text-2xl font-bold mb-6">Create a New Post</h2>
+        <h2 className={`text-2xl font-bold mb-6 ${themeStyles.heading} transition-colors duration-300`}>Create a New Post</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="title">Post Title *</label>
+            <label className={`block text-sm font-medium ${themeStyles.label} mb-2 transition-colors duration-300`} htmlFor="title">Post Title *</label>
             <input
               id="title"
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
+              className={`w-full px-4 py-3 border ${themeStyles.input} rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all duration-300`}
               placeholder="Enter your post title"
               maxLength={200}
               required
@@ -135,12 +150,12 @@ const CreatePostModal = ({ show, onClose, onCreate }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="category">Category *</label>
+            <label className={`block text-sm font-medium ${themeStyles.label} mb-2 transition-colors duration-300`} htmlFor="category">Category *</label>
             <select
               id="category"
               value={category}
               onChange={e => setCategory(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
+              className={`w-full px-4 py-3 border ${themeStyles.input} rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all duration-300`}
               required
             >
               {categories.map((cat) => (
@@ -150,21 +165,21 @@ const CreatePostModal = ({ show, onClose, onCreate }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="content">Content *</label>
+            <label className={`block text-sm font-medium ${themeStyles.label} mb-2 transition-colors duration-300`} htmlFor="content">Content *</label>
             <textarea
               id="content"
               rows={4}
               value={content}
               onChange={e => setContent(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent resize-none transition"
+              className={`w-full px-4 py-3 border ${themeStyles.textarea} rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent resize-none transition-all duration-300`}
               placeholder="Write your blog content here"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="image">Add Image (required)</label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-600 transition cursor-pointer relative">
+            <label className={`block text-sm font-medium ${themeStyles.label} mb-2 transition-colors duration-300`} htmlFor="image">Add Image (required)</label>
+            <div className={`border-2 border-dashed ${themeStyles.uploadArea} rounded-lg p-6 text-center transition-all duration-300 cursor-pointer relative`}>
               {imagePreview ? (
                 <>
                   <img
@@ -182,9 +197,9 @@ const CreatePostModal = ({ show, onClose, onCreate }) => {
               ) : (
                 <>
                   <label htmlFor="image" className="flex flex-col items-center justify-center cursor-pointer">
-                    <Camera size={36} className="text-gray-400 mb-2" />
+                    <Camera size={36} className={`${isDarkMode ? 'text-gray-500' : 'text-gray-400'} mb-2`} />
                     <span className="text-green-600 hover:underline">Upload an image</span>
-                    <span className="text-sm text-gray-500 mt-1">JPG, PNG, WebP or GIF</span>
+                    <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mt-1`}>JPG, PNG, WebP or GIF</span>
                   </label>
                   <input
                     id="image"
@@ -203,14 +218,14 @@ const CreatePostModal = ({ show, onClose, onCreate }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
+              className={`px-6 py-3 rounded-lg ${themeStyles.cancelBtn} transition-colors duration-300`}
               disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-3 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className={`px-6 py-3 rounded-lg ${themeStyles.submitBtn} disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300`}
               disabled={isSubmitting}
             >
               {isSubmitting ? "Creating..." : "Submit Post"}

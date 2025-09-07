@@ -2,10 +2,21 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { TrendingUp, Recycle, MessageSquare, ShoppingBag, Coins } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import gsap from 'gsap';
 
 const QuickStats = ({ stats }) => {
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
   const statsRef = useRef([]);
+
+  // Theme-based styles
+  const themeStyles = {
+    cardBg: isDarkMode ? 'bg-gray-800 border-gray-600 hover:border-gray-500' : 'bg-white border-gray-400 hover:border-gray-500',
+    value: isDarkMode ? 'text-white' : 'text-gray-900',
+    label: isDarkMode ? 'text-gray-300' : 'text-gray-600'
+  };
 
   useEffect(() => {
     const elements = statsRef.current.filter(Boolean);
@@ -58,8 +69,7 @@ const QuickStats = ({ stats }) => {
         <motion.div
           key={index}
           ref={el => statsRef.current[index] = el}
-          className="bg-white rounded-3xl p-6 border border-gray-400 hover:border-gray-500 transition-all duration-300"
-
+          className={`${themeStyles.cardBg} rounded-3xl p-6 border transition-all duration-300`}
           whileHover={{ y: -5 }}
         >
           <div className="flex items-center justify-between mb-4">
@@ -72,8 +82,8 @@ const QuickStats = ({ stats }) => {
               {stat.change}
             </span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</h3>
-          <p className="text-gray-600">{stat.label}</p>
+          <h3 className={`text-2xl font-bold ${themeStyles.value} mb-1 transition-colors duration-300`}>{stat.value}</h3>
+          <p className={`${themeStyles.label} transition-colors duration-300`}>{stat.label}</p>
         </motion.div>
       ))}
     </div>

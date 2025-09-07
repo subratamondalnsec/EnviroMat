@@ -2,13 +2,25 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Leaf, Recycle, Shield } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import gsap from 'gsap';
 
 const AboutHero = () => {
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
   const heroRef = useRef(null);
   const titleRef = useRef(null);
   const descRef = useRef(null);
   const iconsRef = useRef([]);
+
+  // Theme-based styles
+  const themeStyles = {
+    background: isDarkMode ? 'bg-gray-900' : 'bg-[#F9FAFB]',
+    heading: isDarkMode ? 'text-white' : 'text-gray-900',
+    subtitle: isDarkMode ? 'text-gray-300' : 'text-gray-600',
+    iconLabel: isDarkMode ? 'text-gray-300' : 'text-gray-700'
+  };
 
   useEffect(() => {
     if (!heroRef.current) return;
@@ -36,8 +48,7 @@ const AboutHero = () => {
   }, []);
 
   return (
-    <section ref={heroRef} className="relative min-h-[70vh] bg-[#F9FAFB] py-20 overflow-hidden">
-
+    <section ref={heroRef} className={`relative min-h-[70vh] ${themeStyles.background} py-20 overflow-hidden transition-colors duration-300`}>
       {/* Background Animation */}
       <motion.div 
         className="absolute inset-0 opacity-5"
@@ -60,7 +71,7 @@ const AboutHero = () => {
         <div className="text-center">
           <h1 
             ref={titleRef}
-            className="text-5xl lg:text-7xl font-bold text-gray-900 leading-tight mb-8"
+            className={`text-5xl lg:text-7xl font-bold ${themeStyles.heading} leading-tight mb-8 transition-colors duration-300`}
           >
             Building a <span className="text-green-400">Sustainable</span>{' '}
             <span className="text-purple-400">Future</span> Together
@@ -68,7 +79,7 @@ const AboutHero = () => {
           
           <p 
             ref={descRef}
-            className="text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto mb-12 leading-relaxed"
+            className={`text-xl lg:text-2xl ${themeStyles.subtitle} max-w-4xl mx-auto mb-12 leading-relaxed transition-colors duration-300`}
           >
             We're passionate about providing eco-friendly materials and solutions that help create a 
             greener tomorrow. Join us in our mission to make sustainable living accessible to everyone.
@@ -89,7 +100,7 @@ const AboutHero = () => {
                 <div className={`${item.color} mb-2`}>
                   {item.icon}
                 </div>
-                <span className="text-sm font-medium text-gray-700">{item.label}</span>
+                <span className={`text-sm font-medium ${themeStyles.iconLabel} transition-colors duration-300`}>{item.label}</span>
               </div>
             ))}
           </div>

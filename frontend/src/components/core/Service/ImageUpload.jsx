@@ -1,9 +1,9 @@
+// components/ImageUpload.jsx
 import React, { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Upload, X, Camera, Tag } from "lucide-react";
 import gsap from "gsap";
-
-// ... wasteCategories, detectCategory remain as in your code
+import { useSelector } from 'react-redux';
 
 const wasteCategories = {
   plastic: { name: "Plastic", color: "bg-green-100 text-green-800", credits: 5 },
@@ -13,6 +13,7 @@ const wasteCategories = {
   glass: { name: "Glass", color: "bg-purple-100 text-purple-800", credits: 4 },
   electronic: { name: "E-Waste", color: "bg-red-100 text-red-800", credits: 12 },
 };
+
 const detectCategory = () => {
   const categories = Object.keys(wasteCategories);
   return categories[Math.floor(Math.random() * categories.length)];
@@ -21,6 +22,9 @@ const detectCategory = () => {
 const ImageUpload = ({ images, onImagesChange }) => {
   const fileInputRef = useRef(null);
   const containerRef = useRef(null);
+  
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
 
   // Camera state
   const [showCamera, setShowCamera] = useState(false);
@@ -28,6 +32,19 @@ const ImageUpload = ({ images, onImagesChange }) => {
   const videoRef = useRef(null);
   const [cameraError, setCameraError] = useState("");
   const [capturing, setCapturing] = useState(false);
+
+  // Theme-based styles
+  const themeStyles = {
+    container: isDarkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900',
+    heading: isDarkMode ? 'text-white' : 'text-gray-900',
+    uploadArea: isDarkMode ? 'border-gray-600 hover:border-green-400' : 'border-gray-300 hover:border-green-400',
+    button: isDarkMode ? 'bg-green-600 hover:bg-green-700 text-white border-green-500' : 'bg-[#0ae979] hover:bg-[#08DF73] text-gray-600 border-[#08DF73]',
+    helpText: isDarkMode ? 'text-gray-400' : 'text-gray-500',
+    modalBg: isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900',
+    modalCloseBtn: isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-600',
+    previewCard: isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900',
+    selectInput: isDarkMode ? 'bg-gray-600 text-white border-gray-500' : 'bg-white text-gray-900 border-gray-300'
+  };
 
   useEffect(() => {
     if (containerRef.current) {
@@ -57,7 +74,6 @@ const ImageUpload = ({ images, onImagesChange }) => {
 
   // CAMERA: Clean up
   useEffect(() => {
-    // Assign stream to video tag
     if (showCamera && videoRef.current && stream) {
       videoRef.current.srcObject = stream;
     }
@@ -78,15 +94,13 @@ const ImageUpload = ({ images, onImagesChange }) => {
     const ctx = canvas.getContext("2d");
     ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
 
-    // Convert to DataURL
     const dataUrl = canvas.toDataURL("image/jpeg");
-    // Simulate uploading captured image
     const category = detectCategory();
     onImagesChange([
       ...images,
       {
         id: `${Date.now()}-camera`,
-        file: null, // not a File object
+        file: null,
         preview: dataUrl,
         category,
         credits: wasteCategories[category]?.credits || 5,
@@ -138,6 +152,7 @@ const ImageUpload = ({ images, onImagesChange }) => {
     const updatedImages = images.filter((img) => img.id !== imageId);
     onImagesChange(updatedImages);
   };
+
   const changeCategoryManually = (imageId, newCategory) => {
     const updatedImages = images.map((img) =>
       img.id === imageId
@@ -150,13 +165,14 @@ const ImageUpload = ({ images, onImagesChange }) => {
     );
     onImagesChange(updatedImages);
   };
+
   const handleChooseImagesClick = () => {
     fileInputRef.current?.click();
   };
 
   return (
-    <div ref={containerRef} className="bg-white rounded-3xl p-6 border border-gray-300 shadow-sm mb-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+    <div ref={containerRef} className={`${themeStyles.container} rounded-3xl p-6 border shadow-sm mb-6 transition-colors duration-300`}>
+      <h2 className={`text-2xl font-bold ${themeStyles.heading} mb-6 flex items-center transition-colors duration-300`}>
         <Camera className="w-6 h-6 mr-3 text-green-500" />
         Upload Waste Images
       </h2>
@@ -165,10 +181,9 @@ const ImageUpload = ({ images, onImagesChange }) => {
       <div className="grid grid-cols-2 gap-4 mb-6">
         {/* Choose Images */}
         <div
-          className="border-2 border-dashed border-gray-300 rounded-2xl px-0 py-8 flex flex-col items-center justify-center hover:border-green-400 transition-all duration-300 cursor-pointer"
+          className={`border-2 border-dashed ${themeStyles.uploadArea} rounded-2xl px-0 py-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-300`}
           style={{ minHeight: 168 }}
         >
-          {/* Hidden file input */}
           <input
             ref={fileInputRef}
             type="file"
@@ -182,19 +197,19 @@ const ImageUpload = ({ images, onImagesChange }) => {
             onClick={handleChooseImagesClick}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-[#0ae979] backdrop-blur-xl px-6 py-3 border border-[#08DF73] rounded-full text-sm font-medium text-gray-600 hover:bg-[#eff8d8] transition-colors shadow-lg flex items-center space-x-2 mx-auto"
+            className={`${themeStyles.button} backdrop-blur-xl px-6 py-3 border rounded-full text-sm font-medium transition-colors duration-300 shadow-lg flex items-center space-x-2 mx-auto`}
           >
             <Upload className="w-5 h-5" />
-            <span className=" text-lg">Choose Images</span>
+            <span className="text-lg">Choose Images</span>
           </motion.button>
-          <p className="text-gray-500 text-sm text-center mt-2 px-2">
+          <p className={`${themeStyles.helpText} text-sm text-center mt-2 px-2 transition-colors duration-300`}>
             Select multiple images at once<br />(JPG, PNG, GIF up to 10MB each)
           </p>
         </div>
 
         {/* Take Photo */}
         <div
-          className="border-2 border-dashed border-gray-300 rounded-2xl px-0 py-8 flex flex-col items-center justify-center hover:border-green-400 transition-all duration-300 cursor-pointer"
+          className={`border-2 border-dashed ${themeStyles.uploadArea} rounded-2xl px-0 py-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-300`}
           style={{ minHeight: 168 }}
         >
           <motion.button
@@ -202,12 +217,12 @@ const ImageUpload = ({ images, onImagesChange }) => {
             onClick={handleOpenCamera}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-[#0ae979] backdrop-blur-xl px-6 py-3 border border-[#08DF73] rounded-full text-sm font-medium text-gray-600 hover:bg-[#eff8d8] transition-colors shadow-lg flex items-center space-x-2 mx-auto"
+            className={`${themeStyles.button} backdrop-blur-xl px-6 py-3 border rounded-full text-sm font-medium transition-colors duration-300 shadow-lg flex items-center space-x-2 mx-auto`}
           >
             <Camera className="w-5 h-5" />
             <span className="text-lg">Take Photo</span>
           </motion.button>
-          <p className="text-gray-500 text-sm text-center mt-2 px-2">
+          <p className={`${themeStyles.helpText} text-sm text-center mt-2 px-2 transition-colors duration-300`}>
             Directly capture with your camera
           </p>
         </div>
@@ -223,7 +238,7 @@ const ImageUpload = ({ images, onImagesChange }) => {
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white rounded-2xl p-6 max-w-xs w-full flex flex-col items-center relative"
+              className={`${themeStyles.modalBg} rounded-2xl p-6 max-w-xs w-full flex flex-col items-center relative transition-colors duration-300`}
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.8 }}
@@ -237,7 +252,7 @@ const ImageUpload = ({ images, onImagesChange }) => {
                   }
                   setCameraError("");
                 }}
-                className="absolute top-2 right-2 bg-gray-100 rounded-full p-1 text-gray-500 hover:bg-gray-200"
+                className={`absolute top-2 right-2 ${themeStyles.modalCloseBtn} rounded-full p-1 transition-colors duration-200`}
                 type="button"
               >
                 <X className="w-5 h-5" />
@@ -272,7 +287,7 @@ const ImageUpload = ({ images, onImagesChange }) => {
       {/* Image Previews */}
       {images.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+          <h3 className={`text-lg font-semibold ${themeStyles.heading} flex items-center transition-colors duration-300`}>
             <Tag className="w-5 h-5 mr-2 text-purple-500" />
             Uploaded Images ({images.length})
           </h3>
@@ -283,9 +298,8 @@ const ImageUpload = ({ images, onImagesChange }) => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="relative bg-gray-50 rounded-2xl p-4 border border-gray-200 hover:shadow-md transition-all duration-300"
+                className={`relative ${themeStyles.previewCard} rounded-2xl p-4 border hover:shadow-md transition-all duration-300`}
               >
-                {/* Remove Button */}
                 <button
                   onClick={() => removeImage(image.id)}
                   className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors z-10"
@@ -300,7 +314,7 @@ const ImageUpload = ({ images, onImagesChange }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium truncate">
                     {image.name}
                   </p>
                   <select
@@ -308,7 +322,7 @@ const ImageUpload = ({ images, onImagesChange }) => {
                     onChange={(e) =>
                       changeCategoryManually(image.id, e.target.value)
                     }
-                    className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className={`w-full p-2 text-sm border ${themeStyles.selectInput} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300`}
                   >
                     {Object.entries(wasteCategories).map(([key, category]) => (
                       <option key={key} value={key}>

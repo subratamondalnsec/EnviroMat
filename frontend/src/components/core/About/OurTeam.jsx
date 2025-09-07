@@ -2,14 +2,30 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Linkedin, Mail } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const OurTeam = () => {
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
   const sectionRef = useRef(null);
   const cardsRef = useRef([]);
+
+  // Theme-based styles
+  const themeStyles = {
+    background: isDarkMode ? 'bg-gray-900' : 'bg-[#F9FAFB]',
+    heading: isDarkMode ? 'text-white' : 'text-gray-900',
+    subtitle: isDarkMode ? 'text-gray-300' : 'text-gray-600',
+    cardBg: isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200',
+    memberName: isDarkMode ? 'text-white' : 'text-gray-900',
+    memberBio: isDarkMode ? 'text-gray-300' : 'text-gray-600',
+    socialBg: isDarkMode ? 'bg-gray-700 hover:bg-green-700' : 'bg-gray-100 hover:bg-green-100',
+    socialIcon: isDarkMode ? 'text-gray-400' : 'text-gray-600'
+  };
 
   useEffect(() => {
     if (!sectionRef.current) return;
@@ -68,7 +84,7 @@ const OurTeam = () => {
   ];
 
   return (
-    <section ref={sectionRef} className="py-20 bg-[#F9FAFB]">
+    <section ref={sectionRef} className={`py-20 ${themeStyles.background} transition-colors duration-300`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
           className="text-center mb-16"
@@ -77,10 +93,10 @@ const OurTeam = () => {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+          <h2 className={`text-4xl lg:text-5xl font-bold ${themeStyles.heading} mb-6 transition-colors duration-300`}>
             Meet Our <span className="text-green-400">Team</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className={`text-xl ${themeStyles.subtitle} max-w-3xl mx-auto transition-colors duration-300`}>
             The passionate individuals driving our mission to create a more sustainable world
           </p>
         </motion.div>
@@ -90,7 +106,7 @@ const OurTeam = () => {
             <motion.div
               key={index}
               ref={el => cardsRef.current[index] = el}
-              className="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
+              className={`${themeStyles.cardBg} rounded-3xl p-6 shadow-sm border hover:shadow-md transition-all duration-300`}
               whileHover={{ y: -2 }}
             >
               <div className="relative mb-6">
@@ -100,16 +116,16 @@ const OurTeam = () => {
               </div>
               
               <div className="text-center">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{member.name}</h3>
+                <h3 className={`text-xl font-bold ${themeStyles.memberName} mb-2 transition-colors duration-300`}>{member.name}</h3>
                 <p className="text-green-600 font-semibold mb-3">{member.role}</p>
-                <p className="text-gray-600 text-sm leading-relaxed mb-4">{member.bio}</p>
+                <p className={`${themeStyles.memberBio} text-sm leading-relaxed mb-4 transition-colors duration-300`}>{member.bio}</p>
                 
                 <div className="flex justify-center space-x-3">
-                  <button className="p-2 bg-gray-100 rounded-full hover:bg-green-100 transition-colors">
-                    <Mail className="w-4 h-4 text-gray-600" />
+                  <button className={`p-2 ${themeStyles.socialBg} rounded-full transition-colors duration-300`}>
+                    <Mail className={`w-4 h-4 ${themeStyles.socialIcon}`} />
                   </button>
-                  <button className="p-2 bg-gray-100 rounded-full hover:bg-blue-100 transition-colors">
-                    <Linkedin className="w-4 h-4 text-gray-600" />
+                  <button className={`p-2 ${themeStyles.socialBg} rounded-full transition-colors duration-300`}>
+                    <Linkedin className={`w-4 h-4 ${themeStyles.socialIcon}`} />
                   </button>
                 </div>
               </div>

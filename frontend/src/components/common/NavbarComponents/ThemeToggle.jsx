@@ -17,8 +17,8 @@ const ThemeToggle = ({ addToIconButtonsRefs, index, className = "" }) => {
   const themeStyles = {
     buttonBg: isDarkMode ? 'bg-gray-700' : 'bg-[#F9FAFB]',
     buttonBorder: isDarkMode ? 'border-gray-600' : 'border-gray-300',
-    buttonHover: isDarkMode ? 'hover:bg-gray-600 hover:border-gray-500' : 'hover:bg-gray-300 hover:border-gray-400',
-    iconColor: isDarkMode ? 'text-[#08DF73]' : 'text-gray-600'
+    buttonHover: isDarkMode ? 'hover:bg-gray-600 hover:border-gray-500' : 'hover:border-gray-400',
+    iconColor: isDarkMode ? 'text-[#08DF73]' : 'text-gray-600 hover:text-[#08DF73]'
   };
 
   return (

@@ -477,10 +477,6 @@ const Shop = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               {/* Header Section with Theme Toggle */}
               <div ref={headerRef} className="text-center mt-16 mb-16">
-                <div className="flex justify-end mb-4">
-                  <ThemeToggle />
-                </div>
-                
                 <h1 className={`text-5xl lg:text-6xl font-bold ${themeStyles.text} leading-tight mb-6 transition-colors duration-300`}>
                   Sustainable, <span className="text-purple-400">Eco-Friendly</span> <span className="text-green-400">& Recycled</span> <span>Materials</span> <span className="text-purple-400">Shop</span>
                 </h1>

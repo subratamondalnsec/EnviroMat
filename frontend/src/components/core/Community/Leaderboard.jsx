@@ -105,7 +105,7 @@ const Leaderboard = ({ blogs }) => {
   }
 
   return (
-    <div className={`${themeStyles.container} rounded-2xl p-6 shadow-sm border h-fit sticky top-6 transition-colors duration-300`}>
+    <div className={`${themeStyles.container} rounded-2xl p-6 shadow-sm border h-fit sticky top-21 transition-colors duration-300`}>
       <div className="flex items-center gap-3 mb-6">
         <Trophy className="w-6 h-6 text-purple-500" />
         <h2 className={`text-xl font-bold ${themeStyles.heading} transition-colors duration-300`}>Leaderboard</h2>

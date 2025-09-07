@@ -24,7 +24,7 @@ const TestimonialSection = () => {
     quoteText: isDarkMode ? 'text-green-300' : 'text-green-600',
     counterBg: isDarkMode ? 'bg-gray-800' : 'bg-[#F3F4F6]',
     counterBorder: isDarkMode ? 'border-gray-600' : 'border-gray-300',
-    gradientOverlay: isDarkMode ? 'from-[#030404] to-transparent' : 'from-[#F9FAFB] to-transparent',
+    gradientOverlay: isDarkMode ? 'from-gray-900 to-transparent' : 'from-[#F9FAFB] to-transparent',
     hoverGlow: isDarkMode ? 'bg-gradient-to-r from-green-900/40 to-purple-900/40' : 'bg-gradient-to-r from-green-100/50 to-purple-100/50'
   };
 

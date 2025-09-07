@@ -2,6 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import gsap from 'gsap';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
 
 // Import all modular components
 import ImageUpload from '../components/core/Service/ImageUpload';
@@ -10,6 +12,9 @@ import PickupTypeSelector from '../components/core/Service/PickupTypeSelector';
 import CreditSummary from '../components/core/Service/CreditSummary';
 import ConfirmationModal from '../components/core/Service/Confirmation';
 import Footer from '../components/common/Footer';
+
+// Import API
+import { uploadWasteRequest } from '../services/operations/wasteAPI';
 
 const ServicePage = () => {
   const pageRef = useRef(null);
@@ -37,6 +42,11 @@ const ServicePage = () => {
   const [address, setAddress] = useState(initialAddress);
   const [pickupType, setPickupType] = useState(initialPickupType);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Get user token for API calls
+  const { token } = useSelector((state) => state.auth);
 
   useEffect(() => {
     // Scroll to top when component mounts
@@ -55,18 +65,141 @@ const ServicePage = () => {
     setPickupType(type);
   };
 
-  const handleSellClick = () => {
+  const handleSellClick = async () => {
     if (uploadedImages.length === 0) {
-      alert('Please upload at least one image');
+      toast.error('Please upload at least one image');
       return;
     }
 
     if (!address || !address.street.trim()) {
-      alert('Please provide pickup address');
+      toast.error('Please provide pickup address');
       return;
     }
 
-    setShowConfirmation(true);
+    if (!quantity || quantity < 1) {
+      toast.error('Please specify a valid quantity');
+      return;
+    }
+
+    // Validate that all images have categories
+    const invalidImages = uploadedImages.filter(image => !image.category);
+    if (invalidImages.length > 0) {
+      toast.error('Please ensure all images have waste categories assigned');
+      return;
+    }
+
+    // Validate pickup type
+    if (!pickupType || !pickupType.id) {
+      toast.error('Please select a pickup type');
+      return;
+    }
+
+    console.log('Validation passed. Starting upload...');
+    console.log('Images:', uploadedImages);
+    console.log('Address:', address);
+    console.log('Quantity:', quantity);
+    console.log('Pickup Type:', pickupType);
+
+    setIsSubmitting(true);
+
+    try {
+      // Get user's location (lat, lng) - we'll use a simple geolocation
+      const position = await getCurrentLocation();
+      
+      // Prepare form data for each uploaded image
+      const requests = uploadedImages.map(async (image) => {
+        const formData = new FormData();
+        
+        // Map frontend category to backend wasteType enum
+        const wasteTypeMapping = {
+          'plastic': 'plastic',
+          'paper': 'paper', 
+          'metal': 'metal',
+          'organic': 'organic',
+          'glass': 'glass',
+          'electronic': 'e_waste'
+        };
+        
+        const wasteType = wasteTypeMapping[image.category] || 'others';
+        
+        // Add all required fields
+        formData.append('wasteType', wasteType);
+        formData.append('quantity', quantity);
+        formData.append('userQuantity', quantity);
+        formData.append('address', JSON.stringify({
+          street: address.street,
+          city: address.city,
+          state: address.state,
+          pinCode: address.pincode
+        }));
+        formData.append('lat', position.lat);
+        formData.append('lng', position.lng);
+        formData.append('isEmergency', pickupType.id === 'urgent');
+        
+        // Add image file if it exists (for uploaded files)
+        if (image.file) {
+          formData.append('image', image.file);
+        } else {
+          // For camera captured images, convert dataURL to File
+          const response = await fetch(image.preview);
+          const blob = await response.blob();
+          const file = new File([blob], image.name, { type: 'image/jpeg' });
+          formData.append('image', file);
+        }
+        
+        // Debug FormData contents
+        console.log('FormData contents:');
+        for (let [key, value] of formData.entries()) {
+          console.log(key, value);
+        }
+        
+        return uploadWasteRequest(formData, token);
+      });
+      
+      // Execute all requests
+      const results = await Promise.all(requests);
+      
+      // Check if any requests failed
+      const failedRequests = results.filter(result => !result.success);
+      
+      if (failedRequests.length > 0) {
+        toast.error(`${failedRequests.length} waste uploads failed. Please try again.`);
+      } else {
+        toast.success('All waste items uploaded successfully!');
+        setShowConfirmation(true);
+      }
+      
+    } catch (error) {
+      console.error('Error uploading waste:', error);
+      toast.error('Failed to upload waste. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Helper function to get user's current location
+  const getCurrentLocation = () => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        // Fallback coordinates if geolocation is not available
+        resolve({ lat: 22.5726, lng: 88.3639 }); // Kolkata default
+        return;
+      }
+      
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.warn('Geolocation error:', error);
+          // Fallback coordinates
+          resolve({ lat: 22.5726, lng: 88.3639 }); // Kolkata default
+        }
+      );
+    });
   };
 
   // FIXED: Proper form reset function
@@ -74,6 +207,8 @@ const ServicePage = () => {
     setUploadedImages([]);
     setAddress(initialAddress);
     setPickupType(initialPickupType);
+    setQuantity(1);
+    setIsSubmitting(false);
   };
 
   // FIXED: Updated confirmation close handler
@@ -141,6 +276,38 @@ const ServicePage = () => {
                 images={uploadedImages}
                 onImagesChange={handleImagesChange} 
               />
+              
+              {/* Quantity Input */}
+              <motion.div 
+                className="bg-white rounded-3xl p-6 border border-gray-300 shadow-sm"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                  <span className="text-green-500 mr-3">📦</span>
+                  Quantity
+                </h2>
+                <div className="flex items-center space-x-4">
+                  <label htmlFor="quantity" className="text-gray-700 font-medium">
+                    Estimated Weight/Quantity (kg):
+                  </label>
+                  <input
+                    type="number"
+                    id="quantity"
+                    min="1"
+                    max="1000"
+                    value={quantity}
+                    onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                    className="border border-gray-300 rounded-lg px-4 py-2 w-24 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                  <span className="text-gray-500 text-sm">kg</span>
+                </div>
+                <p className="text-sm text-gray-500 mt-2">
+                  Enter the approximate weight of your waste materials
+                </p>
+              </motion.div>
+              
               <AddressForm 
                 address={address}
                 onAddressChange={handleAddressChange} 
@@ -156,7 +323,9 @@ const ServicePage = () => {
               <CreditSummary
                 images={uploadedImages}
                 pickupType={pickupType}
+                quantity={quantity}
                 onSellClick={handleSellClick}
+                isSubmitting={isSubmitting}
                 refSetter={(el) => summaryRef.current = el}
               />
             </div>

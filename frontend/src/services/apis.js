@@ -57,3 +57,11 @@ export const orderEndpoints = {
   GET_ALL_ORDERS_BY_USER_API: BASE_URL + "/order/get-all-orders/user",
   GET_ALL_ADD_TO_CARDS_BY_USER_API: BASE_URL + "/order/get-all-addtocards/user",
 };
+
+// WASTE PICKUP ENDPOINTS
+export const wasteEndpoints = {
+  UPLOAD_WASTE_API: BASE_URL + "/waste/upload",
+  CANCEL_PICKUP_REQUEST_API: BASE_URL + "/waste/cancel-pickup-request",
+  START_PICKUP_API: BASE_URL + "/waste/in_progress-pickup",
+  COMPLETE_PICKUP_API: BASE_URL + "/waste/complete-pickup",
+};

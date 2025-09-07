@@ -85,10 +85,6 @@ const PickupRequestSchema = new mongoose.Schema({
         enum: ["processing", "assigned", "in_progress", "completed", "cancelled"],
         default: "processing",
     },
-    date: {
-        type: Date,
-        default: Date.now
-    },
     isEmergency: {
         type: Boolean,
         default: false,
@@ -96,6 +92,6 @@ const PickupRequestSchema = new mongoose.Schema({
     pickupDate:{
         type:Date,
     }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('PickupRequest', PickupRequestSchema);

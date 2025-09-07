@@ -7,23 +7,63 @@ const User =require('../models/User.js');
 
 exports.uploadWaste = async (req, res) => {
   try {
-    const { wasteType, quantity, address, lat, lng, image,userQuantity, isEmergency = false } = req.body;
+    const { wasteType, quantity, address, lat, lng, userQuantity, isEmergency = false } = req.body;
+    
+    console.log("Request body:", req.body);
+    console.log("Request files:", req.files);
+
+    // Parse address if it's a string
+    let parsedAddress;
+    try {
+      parsedAddress = typeof address === 'string' ? JSON.parse(address) : address;
+    } catch (e) {
+      console.log("Address parsing error:", e);
+      parsedAddress = address;
+    }
+    console.log("Parsed address:", parsedAddress);
 
     // If using file upload, uncomment and integrate
-    // const file = req.files?.image;
-    // const result = file ? await uploadImageToCloudinary(file, process.env.CLOUDINARY_FOLDER) : null;
-
-    const waste = new PickupRequest({
+    const file = req.files?.image;
+    const result = file ? await uploadImageToCloudinary(file, process.env.CLOUDINARY_FOLDER) : null;
+    console.log("Cloudinary upload result:", result);
+    
+    // Prepare waste data
+    const wasteData = {
       userId: req.user.id,
       wasteType,
-      imageURL: image, // or result?.secure_url
-      quantity,
-      location: { lat, lng },
-      address,
-      userQuantity,
-      isEmergency // Add isEmergency field
-    });
+      imageURL: result?.secure_url, // Fixed: use result from cloudinary upload
+      userQuantity: userQuantity || quantity, // Use userQuantity if available, fallback to quantity
+      location: { 
+        lat: parseFloat(lat), 
+        lng: parseFloat(lng) 
+      },
+      address: parsedAddress,
+      isEmergency: isEmergency === 'true' || isEmergency === true // Handle string boolean
+    };
+    
+    console.log("Waste data to save:", wasteData);
+    
+    // Create the PickupRequest object
+    const waste = new PickupRequest(wasteData);
+    
+    // Validate before saving
+    try {
+      await waste.validate();
+      console.log("Validation successful");
+    } catch (validationError) {
+      console.log("Validation error:", validationError);
+      return res.status(400).json({ 
+        error: "Validation failed", 
+        details: validationError.message,
+        fields: Object.keys(validationError.errors || {})
+      });
+    }
 
+    // Save the waste request to database
+    await waste.save();
+    console.log("Waste request saved to database:", waste._id);
+
+    console.log("New waste request data:", waste);
     // 1️⃣ Get up to 10 pickers based on city or state
     let pickers = await Picker.find({ "address.city": address.city }).limit(10);
 

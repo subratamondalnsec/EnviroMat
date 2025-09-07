@@ -18,6 +18,9 @@ const AddProductForm = ({
   const dispatch = useDispatch();
   const { token } = useSelector((state) => state.auth);
   const { loading } = useSelector((state) => state.order);
+  
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
 
   const [formData, setFormData] = useState({
     image: '',
@@ -33,13 +36,28 @@ const AddProductForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const modalRef = useRef(null);
 
+  // Theme-based styles
+  const themeStyles = {
+    overlay: 'bg-black/50 backdrop-blur-sm',
+    modal: isDarkMode ? 'bg-gray-800' : 'bg-white',
+    heading: isDarkMode ? 'text-white' : 'text-gray-900',
+    label: isDarkMode ? 'text-gray-300' : 'text-gray-700',
+    input: isDarkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-green-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-green-600',
+    helperText: isDarkMode ? 'text-gray-400' : 'text-gray-500',
+    uploadArea: isDarkMode ? 'border-gray-600 hover:border-green-400' : 'border-gray-300 hover:border-green-600',
+    uploadIcon: isDarkMode ? 'text-gray-500' : 'text-gray-400',
+    uploadText: isDarkMode ? 'text-green-400' : 'text-green-600',
+    cancelBtn: isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700',
+    submitBtn: 'bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400',
+    closeBtn: isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
+  };
+
   useEffect(() => {
     if (isOpen) {
       gsap.fromTo(modalRef.current, {scale: 0.8, opacity: 0}, {scale:1, opacity:1, duration:0.4, ease:'power2.out'});
     }
   }, [isOpen]);
 
-  // Handle form input changes
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -48,18 +66,15 @@ const AddProductForm = ({
     }));
   };
 
-  // Handle image upload with compression
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
       if (!validTypes.includes(file.type)) {
         alert('Please select a valid image file (JPG, PNG, WebP, or GIF)');
         return;
       }
 
-      // Check file size (limit to 5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert('Image size should be less than 5MB');
         return;
@@ -67,14 +82,11 @@ const AddProductForm = ({
 
       const reader = new FileReader();
       reader.onload = (event) => {
-        // Create an image element to compress the image
         const img = new Image();
         img.onload = () => {
-          // Create canvas for compression
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           
-          // Calculate new dimensions (max 800x600)
           let { width, height } = img;
           const maxWidth = 800;
           const maxHeight = 600;
@@ -94,9 +106,8 @@ const AddProductForm = ({
           canvas.width = width;
           canvas.height = height;
           
-          // Draw and compress image
           ctx.drawImage(img, 0, 0, width, height);
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
           
           setFormData(prev => ({
             ...prev,
@@ -110,7 +121,6 @@ const AddProductForm = ({
     }
   };
 
-  // Handle form submission
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     
@@ -118,33 +128,28 @@ const AddProductForm = ({
       toast.error('Please login to add products');
       return;
     }
-    console.log("Form submitted:", formData);
-    // Validation
+
     if (!formData.title.trim() || !formData.description.trim() || !formData.price.trim() || !formData.quantity.trim() || !formData.address.trim()) {
       toast.error('Please fill in all required fields');
       return;
     }
 
-    // Validate title length (5-20 characters as per backend model)
     if (formData.title.length < 5 || formData.title.length > 20) {
       toast.error('Product title must be between 5 and 20 characters');
       return;
     }
 
-    // Validate description length (25-50 characters as per backend model) 
     if (formData.description.length < 25 || formData.description.length > 50) {
       toast.error('Product description must be between 25 and 50 characters');
       return;
     }
 
-    // Validate price (minimum 50 as per backend model)
     const price = parseFloat(formData.price);
     if (isNaN(price) || price < 50) {
       toast.error('Price must be at least ₹50');
       return;
     }
 
-    // Validate quantity
     const quantity = parseInt(formData.quantity);
     if (isNaN(quantity) || quantity < 1) {
       toast.error('Quantity must be at least 1');
@@ -160,7 +165,6 @@ const AddProductForm = ({
     dispatch(setOrderLoading(true));
 
     try {
-      // Prepare order data for backend
       const orderData = {
         product: {
           title: formData.title.trim(),
@@ -170,20 +174,15 @@ const AddProductForm = ({
           category: formData.category
         },
         image: {
-          tempFilePath: formData.image  // Wrap base64 data in expected format
+          tempFilePath: formData.image
         },
         address: formData.address.trim()
       };
 
-      // Call backend API to create order
       const createdOrder = await createOrder(orderData);
-      
-      // Call parent's onSubmit function with the created order
       onSubmit && onSubmit(createdOrder);
-
       toast.success('Product added successfully!');
       
-      // Reset form and close modal
       resetForm();
       onClose();
     } catch (error) {
@@ -195,7 +194,6 @@ const AddProductForm = ({
     }
   };
 
-  // Reset form data
   const resetForm = () => {
     setFormData({
       image: '',
@@ -209,7 +207,6 @@ const AddProductForm = ({
     setImageFile(null);
   };
 
-  // Handle close
   const handleClose = () => {
     resetForm();
     onClose();
@@ -219,153 +216,157 @@ const AddProductForm = ({
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
+      className={`fixed inset-0 z-50 flex items-center justify-center ${themeStyles.overlay} p-6`}
       initial={{opacity: 0}}
       animate={{opacity: 1}}
       exit={{opacity: 0}}
     >
       <motion.div
         ref={modalRef}
-        className="bg-[#f5f5f5] rounded-3xl pt-6 pb-4 px-6 max-w-xl w-full overflow-hidden relative mt-6"
+        className={`${themeStyles.modal} rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 relative transition-colors duration-300`}
       >
         <button
           onClick={handleClose}
           aria-label="Close modal"
-          className="absolute top-6 right-6 p-2 text-gray-700 hover:bg-gray-100 rounded-full"
+          className={`absolute top-4 right-4 p-2 ${themeStyles.closeBtn} rounded-full transition-colors duration-300`}
         >
-          <X size={24} />
+          <X size={20} />
         </button>
 
-        <h2 className="text-2xl font-bold mb-6">Add New Product</h2>
+        <h2 className={`text-xl font-bold mb-6 ${themeStyles.heading} transition-colors duration-300`}>Add New Product</h2>
 
         <form onSubmit={handleFormSubmit} className="space-y-4">
-          {/* Product Title */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="title">
-              Product Title * (5-20 characters)
-            </label>
-            <input
-              id="title"
-              name="title"
-              type="text"
-              value={formData.title}
-              onChange={handleFormChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
-              placeholder="Enter product title"
-              minLength={5}
-              maxLength={20}
-              required
-            />
-            <p className="text-xs text-gray-500 mt-1">{formData.title.length}/20 characters</p>
-          </div>
+          {/* Two Column Layout for Better Space Usage */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Product Title */}
+            <div>
+              <label className={`block text-sm font-medium ${themeStyles.label} mb-1 transition-colors duration-300`} htmlFor="title">
+                Title * (5-20 chars)
+              </label>
+              <input
+                id="title"
+                name="title"
+                type="text"
+                value={formData.title}
+                onChange={handleFormChange}
+                className={`w-full px-3 py-2 border ${themeStyles.input} rounded-lg focus:ring-2 focus:border-transparent transition-all duration-300`}
+                placeholder="Product title"
+                minLength={5}
+                maxLength={20}
+                required
+              />
+              <p className={`text-xs ${themeStyles.helperText} mt-1 transition-colors duration-300`}>{formData.title.length}/20</p>
+            </div>
 
-          {/* Product Category */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="category">
-              Category *
-            </label>
-            <select
-              id="category"
-              name="category"
-              value={formData.category}
-              onChange={handleFormChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
-              required
-            >
-              {categories.map(category => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
+            {/* Product Category */}
+            <div>
+              <label className={`block text-sm font-medium ${themeStyles.label} mb-1 transition-colors duration-300`} htmlFor="category">
+                Category *
+              </label>
+              <select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleFormChange}
+                className={`w-full px-3 py-2 border ${themeStyles.input} rounded-lg focus:ring-2 focus:border-transparent transition-all duration-300`}
+                required
+              >
+                {categories.map(category => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Product Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="description">
-              Product Description * (25-50 characters)
+            <label className={`block text-sm font-medium ${themeStyles.label} mb-1 transition-colors duration-300`} htmlFor="description">
+              Description * (25-50 chars)
             </label>
             <textarea
               id="description"
               name="description"
-              rows={3}
+              rows={2}
               value={formData.description}
               onChange={handleFormChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent resize-none transition"
-              placeholder="Enter product description"
+              className={`w-full px-3 py-2 border ${themeStyles.input} rounded-lg focus:ring-2 focus:border-transparent resize-none transition-all duration-300`}
+              placeholder="Product description"
               minLength={25}
               maxLength={50}
               required
             />
-            <p className="text-xs text-gray-500 mt-1">{formData.description.length}/50 characters</p>
+            <p className={`text-xs ${themeStyles.helperText} mt-1 transition-colors duration-300`}>{formData.description.length}/50</p>
           </div>
 
-          {/* Product Quantity */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="quantity">
-              Quantity Available *
-            </label>
-            <input
-              id="quantity"
-              name="quantity"
-              type="number"
-              value={formData.quantity}
-              onChange={handleFormChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
-              placeholder="Enter available quantity"
-              min="1"
-              required
-            />
-          </div>
+          {/* Price and Quantity Row */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-medium ${themeStyles.label} mb-1 transition-colors duration-300`} htmlFor="price">
+                Price (₹) * (Min 50)
+              </label>
+              <input
+                id="price"
+                name="price"
+                type="number"
+                value={formData.price}
+                onChange={handleFormChange}
+                className={`w-full px-3 py-2 border ${themeStyles.input} rounded-lg focus:ring-2 focus:border-transparent transition-all duration-300`}
+                placeholder="50"
+                min="50"
+                step="0.01"
+                required
+              />
+            </div>
 
-          {/* Product Price */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="price">
-              Product Price (₹) * (Minimum ₹50)
-            </label>
-            <input
-              id="price"
-              name="price"
-              type="number"
-              value={formData.price}
-              onChange={handleFormChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
-              placeholder="Enter price (minimum ₹50)"
-              min="50"
-              step="0.01"
-              required
-            />
+            <div>
+              <label className={`block text-sm font-medium ${themeStyles.label} mb-1 transition-colors duration-300`} htmlFor="quantity">
+                Quantity *
+              </label>
+              <input
+                id="quantity"
+                name="quantity"
+                type="number"
+                value={formData.quantity}
+                onChange={handleFormChange}
+                className={`w-full px-3 py-2 border ${themeStyles.input} rounded-lg focus:ring-2 focus:border-transparent transition-all duration-300`}
+                placeholder="1"
+                min="1"
+                required
+              />
+            </div>
           </div>
 
           {/* Address */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="address">
+            <label className={`block text-sm font-medium ${themeStyles.label} mb-1 transition-colors duration-300`} htmlFor="address">
               Address *
             </label>
             <textarea
               id="address"
               name="address"
-              rows={3}
+              rows={2}
               value={formData.address}
               onChange={handleFormChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent resize-none transition"
-              placeholder="Enter your address for pickup/delivery"
+              className={`w-full px-3 py-2 border ${themeStyles.input} rounded-lg focus:ring-2 focus:border-transparent resize-none transition-all duration-300`}
+              placeholder="Pickup/delivery address"
               required
             />
           </div>
 
-          {/* Product Image */}
+          {/* Product Image - Compact Design */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="image">
-              Add Image (required)
+            <label className={`block text-sm font-medium ${themeStyles.label} mb-1 transition-colors duration-300`} htmlFor="image">
+              Product Image *
             </label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-600 transition cursor-pointer relative">
+            <div className={`border-2 border-dashed ${themeStyles.uploadArea} rounded-lg p-4 text-center transition-all duration-300 cursor-pointer relative`}>
               {formData.image ? (
                 <>
                   <img
                     src={formData.image}
                     alt="Preview"
-                    className="mx-auto max-h-48 rounded-lg"
+                    className="mx-auto max-h-24 rounded-lg"
                   />
                   <button
                     type="button"
@@ -373,18 +374,18 @@ const AddProductForm = ({
                       setFormData(prev => ({ ...prev, image: '' }));
                       setImageFile(null);
                     }}
-                    className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full hover:bg-red-700"
+                    className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full hover:bg-red-700"
                     aria-label="Remove image"
                   >
-                    <X size={20} />
+                    <X size={16} />
                   </button>
                 </>
               ) : (
                 <>
                   <label htmlFor="image" className="flex flex-col items-center justify-center cursor-pointer">
-                    <Camera size={36} className="text-gray-400 mb-1" />
-                    <span className="text-green-600 hover:underline">Upload an image</span>
-                    <span className="text-sm text-gray-500 mt-1">JPG, PNG, WebP or GIF (Max 5MB)</span>
+                    <Camera size={24} className={`${themeStyles.uploadIcon} mb-1 transition-colors duration-300`} />
+                    <span className={`${themeStyles.uploadText} hover:underline text-sm transition-colors duration-300`}>Upload image</span>
+                    <span className={`text-xs ${themeStyles.helperText} mt-1 transition-colors duration-300`}>Max 5MB</span>
                   </label>
                   <input
                     id="image"
@@ -400,18 +401,18 @@ const AddProductForm = ({
           </div>
 
           {/* Form Actions */}
-          <div className="flex justify-end space-x-4">
+          <div className="flex justify-end space-x-3 pt-4">
             <button
               type="button"
               onClick={handleClose}
-              className="px-6 py-3 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
+              className={`px-4 py-2 rounded-lg ${themeStyles.cancelBtn} transition-colors duration-300`}
               disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-3 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className={`px-4 py-2 rounded-lg ${themeStyles.submitBtn} disabled:cursor-not-allowed transition-colors duration-300`}
               disabled={isSubmitting}
             >
               {isSubmitting ? "Adding..." : "Add Product"}

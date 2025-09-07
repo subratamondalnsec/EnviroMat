@@ -5,6 +5,7 @@ import ProTeamCard from "./ProTeamCard";
 import { motion } from "motion/react";
 import gsap from 'gsap';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
   const sectionRef = useRef(null);
@@ -19,6 +20,18 @@ const HeroSection = () => {
 
   // Get theme state from Redux
   const isDarkMode = useSelector(state => state.theme.isDarkMode);
+  
+  // Navigation hook
+  const navigate = useNavigate();
+
+  // Navigation functions
+  const handleGetStarted = () => {
+    navigate('/shop');
+  };
+
+  const handleContribute = () => {
+    navigate('/services');
+  };
 
   // Theme-based styles
   const themeStyles = {
@@ -253,6 +266,7 @@ const HeroSection = () => {
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={handleGetStarted}
                   className={`px-8 py-3 border-[1.5px] rounded-full font-medium transition-all duration-300 ${themeStyles.buttonPrimary}`}
                 >
                   Get Started
@@ -260,9 +274,10 @@ const HeroSection = () => {
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`px-8 py-3 border-[1.5px] rounded-full font-medium transition-all duration-300 ${themeStyles.buttonSecondary}`}
+                  onClick={handleContribute}
+                  className={`px-7 py-3 border-[1.5px] rounded-full font-medium transition-all duration-300 ${themeStyles.buttonSecondary}`}
                 >
-                  Work with Us
+                  Contribute
                 </motion.button>
               </div>
             </div>

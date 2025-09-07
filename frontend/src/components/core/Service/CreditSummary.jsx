@@ -23,6 +23,9 @@ const CreditSummary = ({
     container: isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300',
     heading: isDarkMode ? 'text-white' : 'text-gray-900',
     itemsCard: isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700',
+    // FIXED: Added quantity card theming
+    quantityCard: isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700',
+    quantityValue: isDarkMode ? 'text-white' : 'text-gray-900',
     creditsCard: isDarkMode ? 'bg-green-900/30 text-gray-300' : 'bg-green-200 text-gray-700',
     reductionCard: isDarkMode ? 'bg-orange-900/30 text-gray-300' : 'bg-orange-100 text-gray-700',
     pickupCard: isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100',
@@ -32,8 +35,14 @@ const CreditSummary = ({
     breakdownHeading: isDarkMode ? 'text-white' : 'text-gray-900',
     itemText: isDarkMode ? 'text-gray-400' : 'text-gray-600',
     border: isDarkMode ? 'border-gray-600' : 'border-gray-300',
-    sellButton: isDarkMode ? 'bg-purple-600 hover:bg-purple-700 text-white border-purple-500' : 'bg-[#cb8fff] border-[#C27BFF] hover:bg-[#d2a4fa] text-gray-700',
-    disabledButton: isDarkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-200 text-gray-500',
+    // FIXED: Updated sell button theming for better dark mode support
+    sellButton: isDarkMode ? 'bg-purple-600 hover:bg-purple-700 text-white border-purple-500' : 'bg-[#cb8fff] border border-[#C27BFF] hover:bg-[#d2a4fa] text-gray-700',
+    // FIXED: Updated disabled button theming
+    disabledButton: isDarkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-500 cursor-not-allowed',
+    // FIXED: Updated spinner color for dark mode
+    spinnerBorder: isDarkMode ? 'border-white' : 'border-gray-600',
+    // FIXED: Updated coin icon color in button
+    coinIcon: isDarkMode ? 'text-white' : 'text-gray-700',
     infoText: isDarkMode ? 'text-gray-400' : 'text-gray-500'
   };
 
@@ -74,12 +83,13 @@ const CreditSummary = ({
           <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>{images.length}</span>
         </div>
 
-        <div className="flex items-center justify-between p-3 bg-gray-200 rounded-lg">
-          <span className="flex items-center text-gray-700">
+        {/* FIXED: Updated quantity card to use themed styles */}
+        <div className={`flex items-center justify-between p-3 ${themeStyles.quantityCard} rounded-lg transition-colors duration-300`}>
+          <span className="flex items-center">
             <Package className="w-4 h-4 mr-2" />
             Quantity
           </span>
-          <span className="font-semibold text-gray-900">{quantity} kg</span>
+          <span className={`font-semibold ${themeStyles.quantityValue} transition-colors duration-300`}>{quantity} kg</span>
         </div>
 
         <div className={`flex items-center justify-between p-3 ${themeStyles.creditsCard} rounded-lg transition-colors duration-300`}>
@@ -131,7 +141,7 @@ const CreditSummary = ({
         </div>
       )}
 
-      {/* Sell Button */}
+      {/* FIXED: Updated Sell Button with proper dark mode theming */}
       <motion.button
         whileHover={{ scale: isReadyToSell && !isSubmitting ? 1.02 : 1 }}
         whileTap={{ scale: isReadyToSell && !isSubmitting ? 0.98 : 1 }}
@@ -139,19 +149,19 @@ const CreditSummary = ({
         disabled={!isReadyToSell || isSubmitting}
         className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${
           isReadyToSell
-            ? 'bg-[#cb8fff] border border-[#C27BFF] hover:bg-[#d2a4fa] text-gray-700 shadow-lg hover:shadow-xl'
-            : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+            ? themeStyles.sellButton + ' shadow-lg hover:shadow-xl'
+            : themeStyles.disabledButton
         }`}
       >
         {isSubmitting ? (
           <span className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600 mr-2"></div>
+            <div className={`animate-spin rounded-full h-5 w-5 border-b-2 ${themeStyles.spinnerBorder} mr-2`}></div>
             Uploading...
           </span>
         ) : isReadyToSell ? (
           <span className="flex items-center justify-center">
             <TrendingUp className="w-5 h-5 mr-2" />
-            Sell Waste (<Coins className={`mx-1 w-4 h-4 ${isDarkMode ? 'text-white' : 'text-gray-700'}`} /> {finalCredits.toFixed(1)})
+            Sell Waste (<Coins className={`mx-1 w-4 h-4 ${themeStyles.coinIcon} transition-colors duration-300`} /> {finalCredits.toFixed(1)})
           </span>
         ) : (
           'Upload Images to Continue'

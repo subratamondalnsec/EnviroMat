@@ -1,43 +1,43 @@
 // components/ServicePage.jsx
-import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'motion/react';
-import gsap from 'gsap';
-import { useSelector } from 'react-redux';
-import { toast } from 'react-hot-toast';
+import React, { useState, useRef, useEffect } from "react";
+import { motion } from "motion/react";
+import gsap from "gsap";
+import { useSelector } from "react-redux";
+import { toast } from "react-hot-toast";
 
 // Import all modular components
-import ImageUpload from '../components/core/Service/ImageUpload';
-import AddressForm from '../components/core/Service/AddressForm';
-import PickupTypeSelector from '../components/core/Service/PickupTypeSelector';
-import CreditSummary from '../components/core/Service/CreditSummary';
-import ConfirmationModal from '../components/core/Service/Confirmation';
-import Footer from '../components/common/Footer';
+import ImageUpload from "../components/core/Service/ImageUpload";
+import AddressForm from "../components/core/Service/AddressForm";
+import PickupTypeSelector from "../components/core/Service/PickupTypeSelector";
+import CreditSummary from "../components/core/Service/CreditSummary";
+import ConfirmationModal from "../components/core/Service/Confirmation";
+import Footer from "../components/common/Footer";
 
 // Import API
-import { uploadWasteRequest } from '../services/operations/wasteAPI';
+import { uploadWasteRequest } from "../services/operations/wasteAPI";
 
 const ServicePage = () => {
   const pageRef = useRef(null);
   const summaryRef = useRef(null);
 
   // Get theme state from Redux
-  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   // Initial state values for proper reset
   const initialAddress = {
-    street: '',
-    city: '',
-    state: '',
-    pincode: '',
-    landmark: ''
+    street: "",
+    city: "",
+    state: "",
+    pincode: "",
+    landmark: "",
   };
 
   const initialPickupType = {
-    id: 'standard',
-    name: 'Standard Pickup',
-    description: 'Scheduled pickup within 2-4 days',
-    duration: '2-4 days',
-    reduction: 0
+    id: "standard",
+    name: "Standard Pickup",
+    description: "Scheduled pickup within 2-4 days",
+    duration: "2-4 days",
+    reduction: 0,
   };
 
   // State management
@@ -53,9 +53,9 @@ const ServicePage = () => {
 
   // Theme styles
   const themeStyles = {
-    background: isDarkMode ? 'bg-gray-900' : 'bg-[#F9FAFB]',
-    heading: isDarkMode ? 'text-white' : 'text-gray-900',
-    subtitle: isDarkMode ? 'text-gray-300' : 'text-gray-600'
+    background: isDarkMode ? "bg-gray-900" : "bg-[#F9FAFB]",
+    heading: isDarkMode ? "text-white" : "text-gray-900",
+    subtitle: isDarkMode ? "text-gray-300" : "text-gray-600",
   };
 
   useEffect(() => {
@@ -77,111 +77,115 @@ const ServicePage = () => {
 
   const handleSellClick = async () => {
     if (uploadedImages.length === 0) {
-      toast.error('Please upload at least one image');
+      toast.error("Please upload at least one image");
       return;
     }
 
     if (!address || !address.street.trim()) {
-      toast.error('Please provide pickup address');
+      toast.error("Please provide pickup address");
       return;
     }
 
     if (!quantity || quantity < 1) {
-      toast.error('Please specify a valid quantity');
+      toast.error("Please specify a valid quantity");
       return;
     }
 
     // Validate that all images have categories
-    const invalidImages = uploadedImages.filter(image => !image.category);
+    const invalidImages = uploadedImages.filter((image) => !image.category);
     if (invalidImages.length > 0) {
-      toast.error('Please ensure all images have waste categories assigned');
+      toast.error("Please ensure all images have waste categories assigned");
       return;
     }
 
     // Validate pickup type
     if (!pickupType || !pickupType.id) {
-      toast.error('Please select a pickup type');
+      toast.error("Please select a pickup type");
       return;
     }
 
-    console.log('Validation passed. Starting upload...');
-    console.log('Images:', uploadedImages);
-    console.log('Address:', address);
-    console.log('Quantity:', quantity);
-    console.log('Pickup Type:', pickupType);
+    console.log("Validation passed. Starting upload...");
+    console.log("Images:", uploadedImages);
+    console.log("Address:", address);
+    console.log("Quantity:", quantity);
+    console.log("Pickup Type:", pickupType);
 
     setIsSubmitting(true);
 
     try {
       // Get user's location (lat, lng) - we'll use a simple geolocation
       const position = await getCurrentLocation();
-      
+
       // Prepare form data for each uploaded image
       const requests = uploadedImages.map(async (image) => {
         const formData = new FormData();
-        
+
         // Map frontend category to backend wasteType enum
         const wasteTypeMapping = {
-          'plastic': 'plastic',
-          'paper': 'paper', 
-          'metal': 'metal',
-          'organic': 'organic',
-          'glass': 'glass',
-          'electronic': 'e_waste'
+          plastic: "plastic",
+          paper: "paper",
+          metal: "metal",
+          organic: "organic",
+          glass: "glass",
+          electronic: "e_waste",
         };
-        
-        const wasteType = wasteTypeMapping[image.category] || 'others';
-        
+
+        const wasteType = wasteTypeMapping[image.category] || "others";
+
         // Add all required fields
-        formData.append('wasteType', wasteType);
-        formData.append('quantity', quantity);
-        formData.append('userQuantity', quantity);
-        formData.append('address', JSON.stringify({
-          street: address.street,
-          city: address.city,
-          state: address.state,
-          pinCode: address.pincode
-        }));
-        formData.append('lat', position.lat);
-        formData.append('lng', position.lng);
-        formData.append('isEmergency', pickupType.id === 'urgent');
-        
+        formData.append("wasteType", wasteType);
+        formData.append("quantity", quantity);
+        formData.append("userQuantity", quantity);
+        formData.append(
+          "address",
+          JSON.stringify({
+            street: address.street,
+            city: address.city,
+            state: address.state,
+            pinCode: address.pincode,
+          })
+        );
+        formData.append("lat", position.lat);
+        formData.append("lng", position.lng);
+        formData.append("isEmergency", pickupType.id === "urgent");
+
         // Add image file if it exists (for uploaded files)
         if (image.file) {
-          formData.append('image', image.file);
+          formData.append("image", image.file);
         } else {
           // For camera captured images, convert dataURL to File
           const response = await fetch(image.preview);
           const blob = await response.blob();
-          const file = new File([blob], image.name, { type: 'image/jpeg' });
-          formData.append('image', file);
+          const file = new File([blob], image.name, { type: "image/jpeg" });
+          formData.append("image", file);
         }
-        
+
         // Debug FormData contents
-        console.log('FormData contents:');
+        console.log("FormData contents:");
         for (let [key, value] of formData.entries()) {
           console.log(key, value);
         }
-        
+
         return uploadWasteRequest(formData, token);
       });
-      
+
       // Execute all requests
       const results = await Promise.all(requests);
-      
+
       // Check if any requests failed
-      const failedRequests = results.filter(result => !result.success);
-      
+      const failedRequests = results.filter((result) => !result.success);
+
       if (failedRequests.length > 0) {
-        toast.error(`${failedRequests.length} waste uploads failed. Please try again.`);
+        toast.error(
+          `${failedRequests.length} waste uploads failed. Please try again.`
+        );
       } else {
-        toast.success('All waste items uploaded successfully!');
+        toast.success("All waste items uploaded successfully!");
         setShowConfirmation(true);
       }
-      
     } catch (error) {
-      console.error('Error uploading waste:', error);
-      toast.error('Failed to upload waste. Please try again.');
+      console.error("Error uploading waste:", error);
+      toast.error("Failed to upload waste. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -195,16 +199,16 @@ const ServicePage = () => {
         resolve({ lat: 22.5726, lng: 88.3639 }); // Kolkata default
         return;
       }
-      
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
           resolve({
             lat: position.coords.latitude,
-            lng: position.coords.longitude
+            lng: position.coords.longitude,
           });
         },
         (error) => {
-          console.warn('Geolocation error:', error);
+          console.warn("Geolocation error:", error);
           // Fallback coordinates
           resolve({ lat: 22.5726, lng: 88.3639 }); // Kolkata default
         }
@@ -231,49 +235,58 @@ const ServicePage = () => {
   };
 
   // Calculate final credits
-  const baseCredits = uploadedImages.reduce((total, image) => total + image.credits, 0);
+  const baseCredits = uploadedImages.reduce(
+    (total, image) => total + image.credits,
+    0
+  );
   const reductionPercentage = pickupType?.reduction || 0;
   const finalCredits = baseCredits - (baseCredits * reductionPercentage) / 100;
 
   return (
     <>
-      <div ref={pageRef} className={`min-h-screen ${themeStyles.background} py-8 transition-colors duration-300`}>
+      <div
+        ref={pageRef}
+        className={`min-h-screen ${themeStyles.background} py-8 transition-colors duration-300`}
+      >
         {/* Background Animation */}
-        <motion.div 
+        <motion.div
           className="absolute inset-0 opacity-5"
           animate={{
-            backgroundPosition: ['0% 0%', '100% 100%'],
+            backgroundPosition: ["0% 0%", "100% 100%"],
           }}
           transition={{
             duration: 35,
             repeat: Infinity,
             repeatType: "reverse",
-            ease: "linear"
+            ease: "linear",
           }}
           style={{
-            backgroundImage: 'radial-gradient(circle, #10B981 1px, transparent 1px)',
-            backgroundSize: '80px 80px',
+            backgroundImage:
+              "radial-gradient(circle, #10B981 1px, transparent 1px)",
+            backgroundSize: "80px 80px",
           }}
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Page Header */}
           <div className="text-center mt-24 mb-10">
-            <motion.h1 
+            <motion.h1
               className={`text-4xl lg:text-5xl font-bold leading-tight mb-6 ${themeStyles.heading} transition-colors duration-300`}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              Sell Your <span className="text-green-400">Waste</span> & Earn <span className="text-purple-400">Credits</span>
+              Sell Your <span className="text-green-400">Waste</span> & Earn{" "}
+              <span className="text-purple-400">Credits</span>
             </motion.h1>
-            <motion.p 
+            <motion.p
               className={`text-xl max-w-3xl mx-auto ${themeStyles.subtitle} transition-colors duration-300`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              Upload images of your waste, get pickup scheduled, and earn credits to buy sustainable products
+              Upload images of your waste, get pickup scheduled, and earn
+              credits to buy sustainable products
             </motion.p>
           </div>
 
@@ -282,24 +295,37 @@ const ServicePage = () => {
             {/* Left Column - Forms */}
             <div className="lg:col-span-2 space-y-6">
               {/* FIXED: Removed key prop and pass images as controlled prop */}
-              <ImageUpload 
+              <ImageUpload
                 images={uploadedImages}
-                onImagesChange={handleImagesChange} 
+                onImagesChange={handleImagesChange}
               />
-              
+
               {/* Quantity Input */}
-              <motion.div 
-                className="bg-white rounded-3xl p-6 border border-gray-300 shadow-sm"
+              <motion.div
+                className={`${
+                  isDarkMode
+                    ? "bg-gray-800 border-gray-600"
+                    : "bg-white border-gray-300"
+                } rounded-3xl p-6 border shadow-sm transition-colors duration-300`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <h2
+                  className={`text-2xl font-bold mb-6 flex items-center ${
+                    isDarkMode ? "text-white" : "text-gray-900"
+                  } transition-colors duration-300`}
+                >
                   <span className="text-green-500 mr-3">📦</span>
                   Quantity
                 </h2>
                 <div className="flex items-center space-x-4">
-                  <label htmlFor="quantity" className="text-gray-700 font-medium">
+                  <label
+                    htmlFor="quantity"
+                    className={`font-medium ${
+                      isDarkMode ? "text-gray-300" : "text-gray-700"
+                    } transition-colors duration-300`}
+                  >
                     Estimated Weight/Quantity (kg):
                   </label>
                   <input
@@ -309,22 +335,36 @@ const ServicePage = () => {
                     max="1000"
                     value={quantity}
                     onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                    className="border border-gray-300 rounded-lg px-4 py-2 w-24 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className={`border rounded-lg px-4 py-2 w-24 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-300 ${
+                      isDarkMode
+                        ? "bg-gray-700 border-gray-600 text-white"
+                        : "bg-white border-gray-300 text-gray-900"
+                    }`}
                   />
-                  <span className="text-gray-500 text-sm">kg</span>
+                  <span
+                    className={`text-sm ${
+                      isDarkMode ? "text-gray-400" : "text-gray-500"
+                    } transition-colors duration-300`}
+                  >
+                    kg
+                  </span>
                 </div>
-                <p className="text-sm text-gray-500 mt-2">
+                <p
+                  className={`text-sm mt-2 ${
+                    isDarkMode ? "text-gray-400" : "text-gray-500"
+                  } transition-colors duration-300`}
+                >
                   Enter the approximate weight of your waste materials
                 </p>
               </motion.div>
-              
-              <AddressForm 
+
+              <AddressForm
                 address={address}
-                onAddressChange={handleAddressChange} 
+                onAddressChange={handleAddressChange}
               />
-              <PickupTypeSelector 
+              <PickupTypeSelector
                 selectedType={pickupType}
-                onPickupTypeChange={handlePickupTypeChange} 
+                onPickupTypeChange={handlePickupTypeChange}
               />
             </div>
 
@@ -336,7 +376,7 @@ const ServicePage = () => {
                 quantity={quantity}
                 onSellClick={handleSellClick}
                 isSubmitting={isSubmitting}
-                refSetter={(el) => summaryRef.current = el}
+                refSetter={(el) => (summaryRef.current = el)}
               />
             </div>
           </div>
@@ -350,7 +390,7 @@ const ServicePage = () => {
           credits={finalCredits.toFixed(1)}
         />
       </div>
-      
+
       {/* Footer */}
       <Footer />
     </>

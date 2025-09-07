@@ -8,7 +8,9 @@ import { useSelector } from 'react-redux';
 const CreditSummary = ({ 
   images, 
   pickupType, 
+  quantity = 1,
   onSellClick, 
+  isSubmitting = false,
   refSetter 
 }) => {
   const summaryRef = useRef(null);
@@ -72,6 +74,14 @@ const CreditSummary = ({
           <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>{images.length}</span>
         </div>
 
+        <div className="flex items-center justify-between p-3 bg-gray-200 rounded-lg">
+          <span className="flex items-center text-gray-700">
+            <Package className="w-4 h-4 mr-2" />
+            Quantity
+          </span>
+          <span className="font-semibold text-gray-900">{quantity} kg</span>
+        </div>
+
         <div className={`flex items-center justify-between p-3 ${themeStyles.creditsCard} rounded-lg transition-colors duration-300`}>
           <span>Base Credits</span>
           <span className="font-semibold text-green-600">+{baseCredits}</span>
@@ -123,17 +133,22 @@ const CreditSummary = ({
 
       {/* Sell Button */}
       <motion.button
-        whileHover={{ scale: isReadyToSell ? 1.02 : 1 }}
-        whileTap={{ scale: isReadyToSell ? 0.98 : 1 }}
+        whileHover={{ scale: isReadyToSell && !isSubmitting ? 1.02 : 1 }}
+        whileTap={{ scale: isReadyToSell && !isSubmitting ? 0.98 : 1 }}
         onClick={onSellClick}
-        disabled={!isReadyToSell}
+        disabled={!isReadyToSell || isSubmitting}
         className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${
           isReadyToSell
-            ? `${themeStyles.sellButton} border shadow-lg hover:shadow-xl`
-            : `${themeStyles.disabledButton} cursor-not-allowed`
+            ? 'bg-[#cb8fff] border border-[#C27BFF] hover:bg-[#d2a4fa] text-gray-700 shadow-lg hover:shadow-xl'
+            : 'bg-gray-200 text-gray-500 cursor-not-allowed'
         }`}
       >
-        {isReadyToSell ? (
+        {isSubmitting ? (
+          <span className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600 mr-2"></div>
+            Uploading...
+          </span>
+        ) : isReadyToSell ? (
           <span className="flex items-center justify-center">
             <TrendingUp className="w-5 h-5 mr-2" />
             Sell Waste (<Coins className={`mx-1 w-4 h-4 ${isDarkMode ? 'text-white' : 'text-gray-700'}`} /> {finalCredits.toFixed(1)})

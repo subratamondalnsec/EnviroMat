@@ -22,8 +22,7 @@ const PORT = process.env.PORT || 4000;
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
-  "https://enviromat.onrender.com", // Add your frontend deployment URL here when deployed
-  "https://your-frontend-domain.com" // Replace with actual frontend domain
+  "https://enviro-mat.vercel.app"
 ]
 
 app.use(

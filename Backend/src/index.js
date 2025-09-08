@@ -11,6 +11,7 @@ const orderRoute=require("./routes/orderRoute")
 const userRoutes = require("./routes/user");
 const pickerRoutes = require("./routes/pickerRoute");
 const blogRoutes = require("./routes/blogRoute");
+const smsRoutes=require('./routes/smsRoute')
 
 // Middlewares
 const app = express();
@@ -51,6 +52,7 @@ app.use("/api/v1/picker", pickerRoutes);
 app.use("/api/v1/order",orderRoute);
 app.use("/api/v1/waste", wasteRoute);
 app.use("/api/v1/blogs", blogRoutes);
+app.use("/api/v1/sms", smsRoutes);
 
 
 // app.get("/", (req, res) => {

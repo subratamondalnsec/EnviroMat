@@ -4,6 +4,7 @@ const Picker =require("../models/Picker");
 const{findNearestPicker}=require("../utils/fatchusingAI");
 const calculateCredits=require('../utils/calculateCreditPoint.js')
 const User =require('../models/User.js');
+const sendWastePickupSMS=require('../utils/smsSender.js')
 
 exports.uploadWaste = async (req, res) => {
   try {
@@ -67,6 +68,15 @@ exports.uploadWaste = async (req, res) => {
         }
       });
     }
+
+    const msg_data = await sendWastePickupSMS(
+      nearestPicker.contactNumber, 
+      waste._id, 
+      wasteType, 
+      quantity, 
+      address, 
+      req.user.name
+    );
 
     // 3️⃣ Assign the nearest picker
     waste.pickupBy = nearestPicker._id;

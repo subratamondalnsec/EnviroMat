@@ -3,12 +3,25 @@ import React, { useRef, useEffect } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { MessageSquare, Heart, MessageCircle } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import gsap from 'gsap';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const CommunityActivity = ({ activityData }) => {
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
   const sectionRef = useRef(null);
+
+  // Theme-based styles
+  const themeStyles = {
+    cardBg: isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-400',
+    heading: isDarkMode ? 'text-white' : 'text-gray-900',
+    activityCardBg: isDarkMode ? 'bg-gray-700' : 'bg-gray-200',
+    activityText: isDarkMode ? 'text-white' : 'text-gray-900',
+    activityValue: isDarkMode ? 'text-white' : 'text-gray-900'
+  };
 
   useEffect(() => {
     if (!sectionRef.current) return;
@@ -54,7 +67,8 @@ const CommunityActivity = ({ activityData }) => {
           font: {
             size: 12,
             weight: 'bold'
-          }
+          },
+          color: isDarkMode ? '#ffffff' : '#000000'
         }
       },
       tooltip: {
@@ -76,7 +90,7 @@ const CommunityActivity = ({ activityData }) => {
     },
     {
       icon: <Heart className="w-5 h-5 text-purple-500" />,
-      label: "Likes Received",
+      label: "Likes Received", 
       value: activityData.likes,
       trend: "+23% this month"
     },
@@ -89,29 +103,28 @@ const CommunityActivity = ({ activityData }) => {
   ];
 
   return (
-    <div ref={sectionRef} className="bg-white rounded-3xl p-6 border border-gray-400">
-      <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+    <div ref={sectionRef} className={`${themeStyles.cardBg} rounded-3xl p-6 border transition-colors duration-300`}>
+      <h3 className={`text-xl font-bold ${themeStyles.heading} mb-6 flex items-center transition-colors duration-300`}>
         <MessageSquare className="w-6 h-6 mr-2 text-green-500" />
         Community Activity
       </h3>
       
-      <div className=" grid lg:grid-cols-2 gap-6">
-
+      <div className="grid lg:grid-cols-2 gap-6">
         <div className="h-64">
           <Doughnut data={chartData} options={options} />
         </div>
         
         <div className="space-y-4">
           {activities.map((activity, index) => (
-            <div key={index} className="flex items-center justify-between p-4 bg-gray-200 rounded-xl">
+            <div key={index} className={`flex items-center justify-between p-4 ${themeStyles.activityCardBg} rounded-xl transition-colors duration-300`}>
               <div className="flex items-center space-x-3">
                 {activity.icon}
                 <div>
-                  <p className="font-semibold text-gray-900">{activity.label}</p>
+                  <p className={`font-semibold ${themeStyles.activityText} transition-colors duration-300`}>{activity.label}</p>
                   <p className="text-sm text-green-600">{activity.trend}</p>
                 </div>
               </div>
-              <span className="text-2xl font-bold text-gray-900">{activity.value}</span>
+              <span className={`text-2xl font-bold ${themeStyles.activityValue} transition-colors duration-300`}>{activity.value}</span>
             </div>
           ))}
         </div>

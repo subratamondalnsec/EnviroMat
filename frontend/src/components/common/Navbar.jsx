@@ -1,3 +1,4 @@
+// components/common/Navbar.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { User, Search, Leaf } from "lucide-react";
 import { motion } from "motion/react";
@@ -10,6 +11,7 @@ import Logo from "./NavbarComponents/Logo";
 import CoinButton from "./NavbarComponents/CoinButton";
 import NavigationLinks from "./NavbarComponents/NavigationLinks";
 import UserDropdown from "./NavbarComponents/UserDropdown";
+import ThemeToggle from "./NavbarComponents/ThemeToggle"; // Import ThemeToggle
 
 // Import logout thunk
 import { logout } from "../../services/operations/authAPI";
@@ -25,10 +27,21 @@ const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Get authentication state from Redux store
+  // Get authentication and theme state from Redux store
   const { token } = useSelector((state) => state.auth);
   const { user } = useSelector((state) => state.profile);
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
   const isAuthenticated = !!token;
+
+  // Theme-based styles for navbar
+  const themeStyles = {
+    navbarBg: isDarkMode ? 'bg-gray-800/30' : 'bg-white/30',
+    buttonContainer: isDarkMode ? 'bg-gray-700/30' : 'bg-white/30',
+    buttonBg: isDarkMode ? 'bg-gray-700' : 'bg-[#F9FAFB]',
+    buttonBorder: isDarkMode ? 'border-gray-600' : 'border-gray-300',
+    buttonText: isDarkMode ? 'text-gray-200' : 'text-gray-600',
+    buttonHover: isDarkMode ? 'hover:bg-gray-600 hover:border-gray-500' : 'hover:bg-[#eff8d8] hover:border-[#08DF73]'
+  };
 
   // Add elements to refs arrays
   const addToIconButtonsRefs = (el, index) => {
@@ -147,7 +160,7 @@ const Navbar = () => {
   return (
     <header
       ref={navbarRef}
-      className="bg-transparent fixed top-[10px] left-0 right-0 w-full z-50"
+      className={`fixed top-[10px] left-0 right-0 w-full z-50 transition-colors duration-300`}
     >
       <div className="max-w-full mx-auto px-9 lg:px-9">
         <div className="flex justify-between items-center h-20">
@@ -155,7 +168,14 @@ const Navbar = () => {
           <NavigationLinks addToNavButtonsRefs={addToNavButtonsRefs} />
 
           {/* Right side icons */}
-          <div className="flex items-center space-x-2 bg-white/30 backdrop-blur-sm px-2 py-[0.4rem] rounded-full">
+          <div className={`flex items-center space-x-2 ${themeStyles.buttonContainer} backdrop-blur-sm px-2 py-[0.4rem] rounded-full transition-colors duration-300`}>
+            {/* Theme Toggle - Always visible */}
+            <ThemeToggle 
+              addToIconButtonsRefs={addToIconButtonsRefs} 
+              index={0}
+              className="w-10 h-10"
+            />
+
             {/* Authentication-based buttons */}
             {isAuthenticated ? (
               <>
@@ -164,13 +184,13 @@ const Navbar = () => {
                 {/* User Profile Dropdown when authenticated */}
                 <div className="relative" ref={dropdownRef}>
                   <motion.button
-                    ref={(el) => addToIconButtonsRefs(el, 1)}
+                    ref={(el) => addToIconButtonsRefs(el, 2)}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="bg-[#F9FAFB] backdrop-blur-xl w-10 h-10 border border-gray-300 rounded-full flex items-center justify-center hover:border-gray-400 transition-colors transform-gpu"
+                    className={`${themeStyles.buttonBg} backdrop-blur-xl w-10 h-10 border ${themeStyles.buttonBorder} rounded-full flex items-center justify-center ${themeStyles.buttonHover} transition-colors transform-gpu`}
                   >
-                    <User className="w-5 h-5 text-gray-600" />
+                    <User className={`w-5 h-5 ${themeStyles.buttonText}`} />
                   </motion.button>
 
                   <UserDropdown
@@ -191,7 +211,7 @@ const Navbar = () => {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleNavigation("/signup")}
-                  className="bg-[#F9FAFB] backdrop-blur-xl px-4 py-2 border border-gray-300 rounded-full text-sm font-medium text-gray-600 hover:bg-[#eff8d8] hover:border-[#08DF73] transition-colors transform-gpu"
+                  className={`${themeStyles.buttonBg} backdrop-blur-xl px-4 py-2 border ${themeStyles.buttonBorder} rounded-full text-sm font-medium ${themeStyles.buttonText} ${themeStyles.buttonHover} transition-colors transform-gpu`}
                 >
                   Sign Up
                 </motion.button>
@@ -200,7 +220,7 @@ const Navbar = () => {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleNavigation("/login")}
-                  className="bg-[#0ae979] backdrop-blur-xl px-4 py-2 border border-[#08DF73] rounded-full text-sm font-medium text-gray-600 hover:bg-[#eff8d8] transition-colors transform-gpu"
+                  className={`${isDarkMode ? 'bg-green-600 border-green-500 hover:bg-green-700' : 'bg-[#0ae979] border-[#08DF73] hover:bg-[#eff8d8]'} backdrop-blur-xl px-4 py-2 rounded-full text-sm font-medium ${themeStyles.buttonText} transition-colors transform-gpu`}
                 >
                   Login
                 </motion.button>

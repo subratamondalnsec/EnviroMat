@@ -23,6 +23,7 @@ const PORT = process.env.PORT || 4000;
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
+  "https://enviro-mat.vercel.app"
 ]
 
 app.use(
@@ -53,6 +54,16 @@ app.use("/api/v1/order",orderRoute);
 app.use("/api/v1/waste", wasteRoute);
 app.use("/api/v1/blogs", blogRoutes);
 app.use("/api/v1/sms", smsRoutes);
+
+// Health check endpoint
+app.get("/", (req, res) => {
+	return res.json({
+		success: true,
+		message: "EnviroMat API is running successfully!",
+		timestamp: new Date().toISOString()
+	});
+});
+
 
 
 // app.get("/", (req, res) => {

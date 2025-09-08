@@ -13,6 +13,7 @@ import {
   Filler
 } from 'chart.js';
 import { TrendingUp, Recycle } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import gsap from 'gsap';
 
 ChartJS.register(
@@ -27,7 +28,16 @@ ChartJS.register(
 );
 
 const WasteSoldTrend = ({ wasteTrendData }) => {
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
   const sectionRef = useRef(null);
+
+  // Theme-based styles
+  const themeStyles = {
+    cardBg: isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-400',
+    heading: isDarkMode ? 'text-white' : 'text-gray-900'
+  };
 
   useEffect(() => {
     if (!sectionRef.current) return;
@@ -86,7 +96,8 @@ const WasteSoldTrend = ({ wasteTrendData }) => {
           font: {
             size: 12,
             weight: 'bold'
-          }
+          },
+          color: isDarkMode ? '#ffffff' : '#000000'
         }
       },
       tooltip: {
@@ -100,23 +111,26 @@ const WasteSoldTrend = ({ wasteTrendData }) => {
     scales: {
       x: {
         grid: {
-          display: false
+          display: false,
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
         },
         ticks: {
           font: {
             weight: 'bold'
-          }
+          },
+          color: isDarkMode ? '#ffffff' : '#000000'
         }
       },
       y: {
         beginAtZero: true,
         grid: {
-          color: 'rgba(0, 0, 0, 0.1)'
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
         },
         ticks: {
           font: {
             weight: 'bold'
-          }
+          },
+          color: isDarkMode ? '#ffffff' : '#000000'
         }
       },
     },
@@ -127,9 +141,9 @@ const WasteSoldTrend = ({ wasteTrendData }) => {
                    wasteTrendData.metal.reduce((a, b) => a + b, 0);
 
   return (
-    <div ref={sectionRef} className="bg-white rounded-3xl p-6 border border-gray-400">
+    <div ref={sectionRef} className={`${themeStyles.cardBg} rounded-3xl p-6 border transition-colors duration-300`}>
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-gray-900 flex items-center">
+        <h3 className={`text-xl font-bold ${themeStyles.heading} flex items-center transition-colors duration-300`}>
           <Recycle className="w-6 h-6 mr-2 text-green-500" />
           Waste Sold Trend
         </h3>
@@ -144,19 +158,19 @@ const WasteSoldTrend = ({ wasteTrendData }) => {
       </div>
 
       <div className="grid grid-cols-3 gap-4 mt-6">
-        <div className="text-center p-4 bg-gree4000 rounded-xl">
+        <div className="text-center p-4 bg-green-100 rounded-xl">
           <div className="text-2xl font-bold text-green-600">
             {wasteTrendData.plastic.reduce((a, b) => a + b, 0)}kg
           </div>
           <div className="text-sm text-gray-600">Plastic Recycled</div>
         </div>
-        <div className="text-center p-4 bg-purpl4000 rounded-xl">
+        <div className="text-center p-4 bg-purple-100 rounded-xl">
           <div className="text-2xl font-bold text-purple-600">
             {wasteTrendData.paper.reduce((a, b) => a + b, 0)}kg
           </div>
           <div className="text-sm text-gray-600">Paper Recycled</div>
         </div>
-        <div className="text-center p-4 bg-blu4000 rounded-xl">
+        <div className="text-center p-4 bg-blue-100 rounded-xl">
           <div className="text-2xl font-bold text-blue-600">
             {wasteTrendData.metal.reduce((a, b) => a + b, 0)}kg
           </div>

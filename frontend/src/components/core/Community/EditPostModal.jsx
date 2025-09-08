@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { X, Camera } from 'lucide-react';
 import { editBlog } from '../../../services/operations/communityApi';
 import { updateBlog } from '../../../slices/communitySlice';
@@ -8,6 +8,9 @@ import { BLOG_CATEGORIES } from '../../../utils/constants';
 import toast from 'react-hot-toast';
 
 const EditPostModal = ({ show, onClose, post }) => {
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('Environment');
@@ -18,6 +21,23 @@ const EditPostModal = ({ show, onClose, post }) => {
 
   const dispatch = useDispatch();
   const modalRef = useRef(null);
+
+  // Theme-based styles
+  const themeStyles = {
+    overlay: 'bg-black/20 backdrop-blur-sm',
+    modal: isDarkMode ? 'bg-gray-800' : 'bg-[#f5f5f5]',
+    heading: isDarkMode ? 'text-white' : 'text-gray-900',
+    label: isDarkMode ? 'text-gray-300' : 'text-gray-700',
+    input: isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:ring-green-500' : 'bg-white border-gray-300 text-gray-900 focus:ring-green-600',
+    textarea: isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:ring-green-500' : 'bg-white border-gray-300 text-gray-900 focus:ring-green-600',
+    uploadArea: isDarkMode ? 'border-gray-600 hover:border-green-400' : 'border-gray-300 hover:border-green-600',
+    radioLabel: isDarkMode ? 'text-gray-400' : 'text-gray-600',
+    cancelBtn: isDarkMode ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300',
+    submitBtn: isDarkMode ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-600 text-white hover:bg-green-700',
+    closeBtn: isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100',
+    cameraIcon: isDarkMode ? 'text-gray-500' : 'text-gray-400',
+    helpText: isDarkMode ? 'text-gray-400' : 'text-gray-500'
+  };
 
   useEffect(() => {
     if (show && post) {
@@ -119,14 +139,14 @@ const EditPostModal = ({ show, onClose, post }) => {
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
+      className={`fixed inset-0 z-50 flex items-center justify-center ${themeStyles.overlay}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       <motion.div
         ref={modalRef}
-        className="bg-[#f5f5f5] rounded-3xl p-8 max-w-xl w-full overflow-hidden relative mt-16 max-h-[90vh] overflow-y-auto"
+        className={`${themeStyles.modal} rounded-3xl p-8 max-w-xl w-full overflow-hidden relative mt-16 max-h-[90vh] overflow-y-auto transition-colors duration-300`}
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
@@ -134,16 +154,16 @@ const EditPostModal = ({ show, onClose, post }) => {
         <button
           onClick={onClose}
           aria-label="Close modal"
-          className="absolute top-6 right-6 p-2 text-gray-700 hover:bg-gray-100 rounded-full"
+          className={`absolute top-6 right-6 p-2 ${themeStyles.closeBtn} rounded-full transition-colors duration-300`}
         >
           <X size={24} />
         </button>
 
-        <h2 className="text-2xl font-bold mb-6">Edit Post</h2>
+        <h2 className={`text-2xl font-bold mb-6 ${themeStyles.heading} transition-colors duration-300`}>Edit Post</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="edit-title">
+            <label className={`block text-sm font-medium ${themeStyles.label} mb-2 transition-colors duration-300`} htmlFor="edit-title">
               Post Title *
             </label>
             <input
@@ -151,7 +171,7 @@ const EditPostModal = ({ show, onClose, post }) => {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
+              className={`w-full px-4 py-3 border ${themeStyles.input} rounded-lg focus:ring-2 focus:border-transparent transition-all duration-300`}
               placeholder="Enter your post title"
               maxLength={200}
               required
@@ -159,14 +179,14 @@ const EditPostModal = ({ show, onClose, post }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="edit-category">
+            <label className={`block text-sm font-medium ${themeStyles.label} mb-2 transition-colors duration-300`} htmlFor="edit-category">
               Category *
             </label>
             <select
               id="edit-category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
+              className={`w-full px-4 py-3 border ${themeStyles.input} rounded-lg focus:ring-2 focus:border-transparent transition-all duration-300`}
               required
             >
               {BLOG_CATEGORIES.map((cat) => (
@@ -176,7 +196,7 @@ const EditPostModal = ({ show, onClose, post }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="edit-content">
+            <label className={`block text-sm font-medium ${themeStyles.label} mb-2 transition-colors duration-300`} htmlFor="edit-content">
               Content *
             </label>
             <textarea
@@ -184,21 +204,21 @@ const EditPostModal = ({ show, onClose, post }) => {
               rows={4}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent resize-none transition"
+              className={`w-full px-4 py-3 border ${themeStyles.textarea} rounded-lg focus:ring-2 focus:border-transparent resize-none transition-all duration-300`}
               placeholder="Write your blog content here"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium ${themeStyles.label} mb-2 transition-colors duration-300`}>
               Post Image
             </label>
             
             {/* Keep existing image option */}
             {post.image && (
               <div className="mb-4">
-                <label className="flex items-center space-x-2 text-sm text-gray-600">
+                <label className={`flex items-center space-x-2 text-sm ${themeStyles.radioLabel} transition-colors duration-300`}>
                   <input
                     type="radio"
                     name="imageOption"
@@ -216,7 +236,7 @@ const EditPostModal = ({ show, onClose, post }) => {
             )}
 
             <div className="mb-4">
-              <label className="flex items-center space-x-2 text-sm text-gray-600">
+              <label className={`flex items-center space-x-2 text-sm ${themeStyles.radioLabel} transition-colors duration-300`}>
                 <input
                   type="radio"
                   name="imageOption"
@@ -233,7 +253,7 @@ const EditPostModal = ({ show, onClose, post }) => {
               </label>
             </div>
 
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-600 transition cursor-pointer relative">
+            <div className={`border-2 border-dashed ${themeStyles.uploadArea} rounded-lg p-6 text-center transition-all duration-300 cursor-pointer relative`}>
               {imagePreview ? (
                 <>
                   <img
@@ -255,9 +275,9 @@ const EditPostModal = ({ show, onClose, post }) => {
               ) : (
                 <>
                   <label htmlFor="edit-image" className="flex flex-col items-center justify-center cursor-pointer">
-                    <Camera size={36} className="text-gray-400 mb-2" />
+                    <Camera size={36} className={`${themeStyles.cameraIcon} mb-2`} />
                     <span className="text-green-600 hover:underline">Upload an image</span>
-                    <span className="text-sm text-gray-500 mt-1">JPG, PNG, WebP or GIF</span>
+                    <span className={`text-sm ${themeStyles.helpText} mt-1`}>JPG, PNG, WebP or GIF</span>
                   </label>
                   <input
                     id="edit-image"
@@ -276,14 +296,14 @@ const EditPostModal = ({ show, onClose, post }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
+              className={`px-6 py-3 rounded-lg ${themeStyles.cancelBtn} transition-colors duration-300`}
               disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-3 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className={`px-6 py-3 rounded-lg ${themeStyles.submitBtn} disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300`}
               disabled={isSubmitting}
             >
               {isSubmitting ? "Updating..." : "Update Post"}

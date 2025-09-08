@@ -1,16 +1,26 @@
+// components/common/NavbarComponents/AuthenticatedOptions.jsx
 import React from 'react';
+import { useSelector } from 'react-redux';
 import UserDropdownItem from './UserDropdownItem';
 
 const AuthenticatedOptions = ({ handleNavigation, handleLogout, user }) => {
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
   const isPicker = user?.accountType === 'Picker';
+  
+  // Theme-based styles
+  const themeStyles = {
+    text: isDarkMode ? 'text-white' : 'text-gray-800',
+    secondaryText: isDarkMode ? 'text-gray-300' : 'text-gray-500',
+    borderColor: isDarkMode ? 'border-gray-600/50' : 'border-gray-200/50'
+  };
   
   return (
     <>
-      <div className="px-4 py-2 border-b border-gray-200/50">
-        <p className="text-sm font-medium text-gray-800">
+      <div className={`px-4 py-2 border-b ${themeStyles.borderColor} transition-colors duration-300`}>
+        <p className={`text-sm font-medium ${themeStyles.text}`}>
           {user?.firstName || 'User'} {user?.lastName || ''}
         </p>
-        <p className="text-xs text-gray-500">
+        <p className={`text-xs ${themeStyles.secondaryText}`}>
           {user?.email || 'user@example.com'}
         </p>
         {isPicker && (
@@ -62,7 +72,7 @@ const AuthenticatedOptions = ({ handleNavigation, handleLogout, user }) => {
         }
         label="Logout"
         color="text-red-600"
-        hoverBg="hover:bg-red-50"
+        hoverBg={isDarkMode ? "hover:bg-red-900/20" : "hover:bg-red-50"}
         hoverText="hover:text-red-700"
       />
     </>

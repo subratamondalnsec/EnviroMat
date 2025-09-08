@@ -16,6 +16,9 @@ import { getAllBlogs, toggleLikeBlog, addCommentToBlog } from "../services/opera
 import { setLoading, setBlogs, removeBlog } from "../slices/communitySlice";
 
 const CommunityPage = () => {
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -30,6 +33,16 @@ const CommunityPage = () => {
   const pageRef = useRef(null);
   const headerRef = useRef(null);
   const postsRef = useRef([]);
+
+  // Theme-based styles
+  const themeStyles = {
+    background: isDarkMode ? 'bg-gray-900' : 'bg-[#F9FAFB]',
+    heading: isDarkMode ? 'text-white' : 'text-gray-900',
+    subtitle: isDarkMode ? 'text-gray-300' : 'text-gray-600',
+    loadingText: isDarkMode ? 'text-white' : 'text-gray-900',
+    loadingSubtext: isDarkMode ? 'text-gray-400' : 'text-gray-600',
+    button: isDarkMode ? 'bg-purple-600 hover:bg-purple-700 text-white border-purple-500' : 'bg-[#cb8fff] border-[#C27BFF] hover:bg-[#d2a4fa] text-gray-700'
+  };
 
   useEffect(() => {
     const loadBlogs = async () => {
@@ -141,7 +154,7 @@ const CommunityPage = () => {
 
   return (
     <>
-      <section ref={pageRef} className="min-h-screen bg-[#F9FAFB] py-8 relative">
+      <section ref={pageRef} className={`min-h-screen ${themeStyles.background} py-8 relative transition-colors duration-300`}>
         {/* Background Animation */}
         <motion.div
           className="absolute inset-0 opacity-5"
@@ -168,11 +181,11 @@ const CommunityPage = () => {
             className="flex justify-between items-center my-16"
           >
             <div>
-              <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+              <h1 className={`text-5xl lg:text-6xl font-bold ${themeStyles.heading} leading-tight transition-colors duration-300`}>
                 <span className="text-purple-400">Community</span>{" "}
                 <span className="text-green-400">Blog</span>
               </h1>
-              <p className="text-gray-600 text-lg mt-4 max-w-xl">
+              <p className={`${themeStyles.subtitle} text-lg mt-4 max-w-xl transition-colors duration-300`}>
                 Share your waste management journey and inspire others with your
                 sustainable living stories
               </p>
@@ -181,7 +194,7 @@ const CommunityPage = () => {
             {/* Create Post Button */}
             <button
               onClick={() => setShowCreateModal(true)}
-              className="bg-[#cb8fff] border border-[#C27BFF] hover:bg-[#d2a4fa] text-gray-700 font-semibold flex items-center gap-2 rounded-full px-3 py-2 shadow-md transition-all duration-300 hover:scale-102"
+              className={`${themeStyles.button} border font-semibold flex items-center gap-2 rounded-full px-3 py-2 shadow-md transition-all duration-300 hover:scale-102`}
               aria-label="Create new post"
             >
               <Plus className="w-5 h-5" /> Create New
@@ -224,10 +237,10 @@ const CommunityPage = () => {
                     className="w-full text-center py-16"
                   >
                     <div className="text-6xl mb-4">🔄</div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    <h3 className={`text-2xl font-bold ${themeStyles.loadingText} mb-2 transition-colors duration-300`}>
                       Loading posts...
                     </h3>
-                    <p className="text-gray-600">
+                    <p className={`${themeStyles.loadingSubtext} transition-colors duration-300`}>
                       Please wait while we fetch the latest community posts
                     </p>
                   </motion.div>
@@ -238,10 +251,10 @@ const CommunityPage = () => {
                     className="w-full text-center py-16"
                   >
                     <div className="text-6xl mb-4">🌱</div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    <h3 className={`text-2xl font-bold ${themeStyles.loadingText} mb-2 transition-colors duration-300`}>
                       {blogs.length === 0 ? "No posts yet" : "No posts found"}
                     </h3>
-                    <p className="text-gray-600 mb-6">
+                    <p className={`${themeStyles.loadingSubtext} mb-6 transition-colors duration-300`}>
                       {blogs.length === 0 
                         ? "Be the first to share your sustainable journey!"
                         : "Try changing your filter or create a new post!"

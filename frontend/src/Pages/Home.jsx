@@ -3,16 +3,18 @@ import LegacySection from "../components/core/Home/LegacySection";
 import ServicesCard from "../components/core/Home/ServicesCard";
 import InfiniteMarquee from "../components/core/Home/Marquee";
 import TestimonialSection from "../components/core/Home/TestimonialSection";
-
 import Footer from "../components/common/Footer";
 import React, { useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Home = () => {
+  // Get theme state from Redux
+  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
+
   const containerRef = useRef(null);
   const card1Ref = useRef(null);
   const card2Ref = useRef(null);
@@ -66,7 +68,7 @@ const Home = () => {
     // Set initial positions
     cards.forEach((card, index) => {
       gsap.set(card, {
-        y: 300 + index * 300,
+        y: 80 + index * 405, // Much smaller values to bring cards very close to marquees
         scale: 0.8,
         zIndex: index - cards.length,
       });
@@ -102,33 +104,52 @@ const Home = () => {
     };
   }, []);
 
+  // Theme-based styles for service cards container
+  const serviceCardThemeStyles = {
+    background: isDarkMode ? "bg-gray-900" : "bg-white",
+    border: isDarkMode ? "border-gray-700" : "border-gray-200",
+  };
+
   return (
-    <div className="overflow-hidden">
+    <div
+      className={`overflow-hidden ${
+        isDarkMode ? "bg-gray-900" : "bg-white"
+      } transition-colors duration-300`}
+    >
       <HeroSection />
       <LegacySection />
 
-      {/* Infinite Marquee Scroller */}
+      {/* Infinite Marquee Scroller - Positioned between Legacy and Service Cards */}
+      <div className="relative w-full h-52 mt-36 overflow-hidden flex items-center justify-center">
+        {/* First marquee - rotated clockwise */}
+        <div className="absolute top-1/2 left-0 w-full transform -translate-y-1/2 rotate-5 origin-center">
+          <InfiniteMarquee
+            text="Shaping a greener future, One waste at a time"
+            speed={40}
+            direction="right"
+            className="bg-purple-300 border-y-purple-400 w-[110%]"
+            textClassName="text-4xl md:text-5xl font-medium text-gray-600"
+            pauseOnHover={false}
+          />
+        </div>
 
-      <InfiniteMarquee
-        speed={40}
-        direction="right"
-        className="bg-purple-300 border-y-purple-400 rotate-5 translate-y-[300%]"
-        textClassName="text-4xl md:text-5xl font-medium text-gray-600"
-        pauseOnHover={false}
-      />
+        {/* Second marquee - rotated counterclockwise */}
+        <div className="absolute top-1/2 left-0 w-full transform -translate-y-1/2 -rotate-5 origin-center">
+          <InfiniteMarquee
+            text="Join the movement for a sustainable tomorrow!"
+            speed={40}
+            direction="left"
+            className="bg-purple-300 border-y-purple-400 w-[110%]"
+            textClassName="text-4xl md:text-5xl font-medium text-gray-600"
+            pauseOnHover={false}
+          />
+        </div>
+      </div>
 
-      <InfiniteMarquee
-        speed={40}
-        direction="left"
-        className="bg-purple-300 border-y-purple-400 -rotate-5 translate-y-[200%]"
-        textClassName="text-4xl md:text-5xl font-medium text-gray-600"
-        pauseOnHover={false}
-      />
-
-      {/* Service Cards Animation */}
+      {/* Service Cards Animation with Dark Mode */}
       <div
         ref={containerRef}
-        className="relative overflow-hidden"
+        className={`relative overflow-hidden ${serviceCardThemeStyles.background} transition-colors duration-300`}
         style={{ height: "100vh" }}
       >
         <div className="sticky top-0 flex items-center justify-center w-full h-full">
@@ -145,7 +166,7 @@ const Home = () => {
           {/* Card 2 */}
           <div
             ref={card2Ref}
-            className="absolute flex items-center justify-center w-full h-full"
+            className="absolute flex items-center justify-center w-full h-full translate-y-4"
           >
             <div className="w-full max-w-7xl px-4">
               <ServicesCard {...cardsData[1]} className="h-full w-full" />

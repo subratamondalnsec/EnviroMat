@@ -2,6 +2,7 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import gsap from 'gsap';
+import { useSelector } from 'react-redux';
 
 // Import all modular components
 import AboutHero from '../components/core/About/AboutHero';
@@ -13,6 +14,9 @@ import Footer from '../components/common/Footer';
 
 const AboutPage = () => {
   const pageRef = useRef(null);
+  
+  // Get theme state from Redux
+  const isDarkMode = useSelector(state => state.theme.isDarkMode);
 
   useEffect(() => {
     // Scroll to top when component mounts
@@ -20,7 +24,7 @@ const AboutPage = () => {
   }, []);
 
   return (
-    <div ref={pageRef} className="min-h-screen bg-white">
+    <div ref={pageRef} className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-white'} transition-colors duration-300`}>
       {/* Background Animation Container */}
       <motion.div 
         className="fixed inset-0 pointer-events-none z-0"

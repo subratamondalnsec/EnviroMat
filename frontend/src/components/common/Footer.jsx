@@ -225,7 +225,7 @@ const Footer = () => {
                   transition={{ duration: 0.2 }}
                 >
                   <span className="text-white/70 text-sm">
-                    +88 0324234234
+                    +91 9832668044
                   </span>
                 </motion.li>
                 <motion.li 
@@ -235,7 +235,7 @@ const Footer = () => {
                   transition={{ duration: 0.2 }}
                 >
                   <span className="text-white/70 text-sm">
-                    hello@fibostudio.com
+                    hello@techsquad.com
                   </span>
                 </motion.li>
               </ul>
@@ -259,7 +259,7 @@ const Footer = () => {
                 whileHover={{color: '#10B981'}}
                 transition={{ duration: 0.2 }}
               >
-                336 East Shewrapara, Mirpur, Dhaka, Bangladesh
+                Kolkata, West Bengal, India, 700152
               </motion.p>
             </div>
           </motion.div>

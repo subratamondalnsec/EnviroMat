@@ -1,7 +1,7 @@
 # 🌱 EnviroMat - Sustainable Waste Management Platform
 
 <div align="center">
-  <img src="frontend/public/Logo.png" alt="EnviroMat Logo" width="200"/>
+  <img src="https://res.cloudinary.com/dabaopg3v/image/upload/v1769107860/Screenshot_2026-01-23_001635_zgqed3.png" alt="EnviroMat"/>
   
   [![React](https://img.shields.io/badge/React-18.3.1-blue.svg)](https://reactjs.org/)
   [![Node.js](https://img.shields.io/badge/Node.js-Express-green.svg)](https://nodejs.org/)
